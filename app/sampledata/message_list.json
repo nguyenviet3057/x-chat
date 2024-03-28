@@ -1,0 +1,54 @@
+[
+  {
+    "id": "J7AesfvdhOL2LUvg",
+    "participants": [
+      1, 2
+    ],
+    "chat": "Xin chào",
+    "images": [],
+    "senderId": 1,
+    "senderName": "A",
+    "receiverId": 2,
+    "receiverName": "B",
+    "timestamp": "2024-03-28T15:25:50+07:00"
+  },
+  {
+    "id": "8op6JU2riQ0973td",
+    "participants": [
+      1, 2
+    ],
+    "chat": "Ok, chào lại",
+    "images": [],
+    "senderId": 2,
+    "senderName": "B",
+    "receiverId": 1,
+    "receiverName": "A",
+    "timestamp": "2024-03-28T15:25:51+07:00"
+  },
+  {
+    "id": "krcyU03muWJe3eTJ",
+    "participants": [
+      1, 2
+    ],
+    "chat": "Hỏi lần đầu",
+    "images": [],
+    "senderId": 1,
+    "senderName": "A",
+    "receiverId": 2,
+    "receiverName": "B",
+    "timestamp": "2024-03-28T15:25:52+07:00"
+  },
+  {
+    "id": "0UdhY9S4FecqpHmU",
+    "participants": [
+      1, 2
+    ],
+    "chat": "Hỏi tiếp",
+    "images": [],
+    "senderId": 1,
+    "senderName": "A",
+    "receiverId": 2,
+    "receiverName": "B",
+    "timestamp": "2024-03-28T15:25:53+07:00"
+  }
+]
