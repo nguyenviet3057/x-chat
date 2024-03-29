@@ -2,33 +2,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rlMessageItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_centerVertical="true"
     android:paddingLeft="10dp"
     android:paddingTop="5dp"
     android:paddingRight="10dp"
-    android:paddingBottom="5dp">
-
-    <ImageView
-        android:id="@+id/ivAvatar"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_alignParentEnd="true"
-        android:layout_centerInParent="true"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/circular_border_background"
-        android:scaleType="centerCrop"
-        tools:srcCompat="@tools:sample/avatars" />
+    android:paddingBottom="5dp"
+    android:textAlignment="viewEnd">
 
     <TextView
         android:id="@+id/tvChat"
-        android:layout_width="240dp"
+        android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:layout_marginEnd="16dp"
-        android:layout_toStartOf="@+id/ivAvatar"
+        android:layout_alignParentEnd="true"
+        android:layout_centerInParent="false"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/message_text_content_background"
         android:gravity="center_vertical"
-        android:paddingEnd="8dp"
+        android:maxWidth="240dp"
+        android:paddingHorizontal="8dp"
         android:text="TextView"
-        android:textAlignment="textEnd" />
+        android:textAlignment="viewEnd"
+        android:textColor="@color/white" />
 </RelativeLayout>

@@ -8,6 +8,7 @@
     "images": [],
     "senderId": 1,
     "senderName": "A",
+    "senderAvatar": "https://www.shutterstock.com/image-vector/default-avatar-profile-icon-social-600nw-1677509740.jpg",
     "receiverId": 2,
     "receiverName": "B",
     "timestamp": "2024-03-28T15:25:50+07:00"
@@ -21,6 +22,7 @@
     "images": [],
     "senderId": 2,
     "senderName": "B",
+    "senderAvatar": "https://www.refugee-action.org.uk/wp-content/uploads/2016/10/anonymous-user.png",
     "receiverId": 1,
     "receiverName": "A",
     "timestamp": "2024-03-28T15:25:51+07:00"
@@ -33,6 +35,7 @@
     "chat": "Hỏi lần đầu",
     "images": [],
     "senderId": 1,
+    "senderAvatar": "https://www.shutterstock.com/image-vector/default-avatar-profile-icon-social-600nw-1677509740.jpg",
     "senderName": "A",
     "receiverId": 2,
     "receiverName": "B",
@@ -47,6 +50,7 @@
     "images": [],
     "senderId": 1,
     "senderName": "A",
+    "senderAvatar": "https://www.shutterstock.com/image-vector/default-avatar-profile-icon-social-600nw-1677509740.jpg",
     "receiverId": 2,
     "receiverName": "B",
     "timestamp": "2024-03-28T15:25:53+07:00"

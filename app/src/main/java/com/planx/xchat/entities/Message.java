@@ -14,16 +14,16 @@ public class Message {
     private String senderAvatar;
     private int receiverId;
     private String receiverName;
-    private String receiverAvatar;
     private Date timestamp;
 
-    public Message(String id, List<Integer> participants, String chat, ArrayList<String> images, int senderId, String senderName, int receiverId, String receiverName, Date timestamp) {
+    public Message(String id, List<Integer> participants, String chat, ArrayList<String> images, int senderId, String senderName, String senderAvatar, int receiverId, String receiverName, Date timestamp) {
         this.id = id;
         this.participants = participants;
         this.chat = chat;
         this.images = images;
         this.senderId = senderId;
         this.senderName = senderName;
+        this.senderAvatar = senderAvatar;
         this.receiverId = receiverId;
         this.receiverName = receiverName;
         this.timestamp = timestamp;
@@ -99,14 +99,6 @@ public class Message {
 
     public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
-    }
-
-    public String getReceiverAvatar() {
-        return receiverAvatar;
-    }
-
-    public void setReceiverAvatar(String receiverAvatar) {
-        this.receiverAvatar = receiverAvatar;
     }
 
     public Date getTimestamp() {
