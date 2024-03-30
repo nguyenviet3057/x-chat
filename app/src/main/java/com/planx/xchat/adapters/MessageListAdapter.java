@@ -19,6 +19,7 @@ import com.planx.xchat.R;
 import com.planx.xchat.entities.Message;
 import com.planx.xchat.entities.User;
 import com.planx.xchat.enums.MessageType;
+import com.planx.xchat.interfaces.IOnItemClickListener;
 
 import java.util.ArrayList;
 
@@ -26,10 +27,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
     private Context context;
     private ArrayList<Message> messageList;
+    private IOnItemClickListener itemClickListener;
 
-    public MessageListAdapter(Context context, ArrayList<Message> messageList) {
+    public MessageListAdapter(Context context, ArrayList<Message> messageList, IOnItemClickListener itemClickListener) {
         this.context = context;
         this.messageList = messageList;
+        this.itemClickListener = itemClickListener;
     }
 
     @NonNull
@@ -56,17 +59,18 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     public void onBindViewHolder(@NonNull MessageListViewHolder holder, int position) {
         Message message = messageList.get(position);
         holder.tvChat.setText(message.getChat());
-        if (position > 0 && messageList.get(position - 1).getSenderId() == message.getSenderId()) {
+
+        if (position > 0 && messageList.get(position - 1).getSenderId() == message.getSenderId()) { // Hide avatar if previous message belong to the same user
             holder.rlMessageItem.setPadding(holder.rlMessageItem.getPaddingLeft(), 5, holder.rlMessageItem.getPaddingRight(), 0);
 
             if (message.getSenderId() != User.getInstance().getId()) {
                 holder.ivAvatar.setVisibility(View.INVISIBLE);
             }
         } else {
-            if (position < messageList.size() - 1 && messageList.get(position + 1).getSenderId() == message.getSenderId()) {
+            if (position < messageList.size() - 1 && messageList.get(position + 1).getSenderId() == message.getSenderId()) { // Closer from bottom to the next message if in the same group message
                 holder.rlMessageItem.setPadding(holder.rlMessageItem.getPaddingLeft(), holder.rlMessageItem.getPaddingTop(), holder.rlMessageItem.getPaddingRight(), 0);
             }
-            if (message.getSenderId() != User.getInstance().getId()) {
+            if (message.getSenderId() != User.getInstance().getId()) { // Show avatar if sender is not main user and the current message is the first of the group message
                 Glide.with(context).load(message.getSenderAvatar()).into(holder.ivAvatar);
             }
         }
@@ -91,6 +95,14 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             rlMessageItem = itemView.findViewById(R.id.rlMessageItem);
             ivAvatar = itemView.findViewById(R.id.ivAvatar);
             tvChat = itemView.findViewById(R.id.tvChat);
+
+            itemView.setOnClickListener(v -> {
+                itemClickListener.onItemClick(getAdapterPosition());
+            });
+            itemView.setOnLongClickListener(v -> {
+                itemClickListener.onItemLongClick(getAdapterPosition());
+                return true;
+            });
         }
     }
 }

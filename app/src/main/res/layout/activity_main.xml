@@ -17,23 +17,29 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMessageList"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:foregroundGravity="bottom"
-        android:paddingVertical="5dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
+    <com.planx.xchat.extensions.LinearLayoutIOnItemClickListener
+        android:id="@+id/llMessageHistoryContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="bottom"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/llChatFunction"
+        app:layout_constraintTop_toBottomOf="@+id/tbHeader">
 
-    <LinearLayout
-        android:id="@+id/linearLayout"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMessageList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:foregroundGravity="bottom"
+            android:paddingVertical="5dp" />
+    </com.planx.xchat.extensions.LinearLayoutIOnItemClickListener>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/llChatFunction"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="vertical"
         android:paddingHorizontal="10dp"
         android:paddingVertical="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -41,11 +47,14 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <ScrollView
-            android:layout_width="match_parent"
+            android:id="@+id/scrollView2"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="50dp"
-            android:minHeight="50dp">
+            android:layout_marginStart="48dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imageButton"
+            app:layout_constraintStart_toStartOf="parent">
 
             <EditText
                 android:id="@+id/etMessage"
@@ -53,18 +62,31 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:background="@drawable/message_text_input_background"
-                android:ems="10"
                 android:gravity="center_vertical"
-                android:hint="Aa..."
+                android:hint="@string/et_placeholder"
                 android:inputType="textMultiLine"
-                android:lines="5"
-                android:maxLines="3"
+                android:maxLines="6"
+                android:minHeight="48dp"
                 android:minLines="1"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp"
-                android:text="12345678901234567890123456789012345678901234567890123456789012345678901234567890" />
+                android:textSize="16sp" />
         </ScrollView>
 
-    </LinearLayout>
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/cicle_send_button"
+            android:padding="3dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/scrollView2"
+            app:srcCompat="@android:drawable/ic_menu_send" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
