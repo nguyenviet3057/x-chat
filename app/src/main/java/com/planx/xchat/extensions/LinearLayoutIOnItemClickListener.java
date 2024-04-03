@@ -10,6 +10,9 @@ import androidx.annotation.Nullable;
 import com.planx.xchat.interfaces.IOnItemClickListener;
 
 public class LinearLayoutIOnItemClickListener extends LinearLayout implements IOnItemClickListener {
+
+    private int position;
+
     public LinearLayoutIOnItemClickListener(Context context) {
         super(context);
     }
@@ -32,5 +35,12 @@ public class LinearLayoutIOnItemClickListener extends LinearLayout implements IO
     }
 
     @Override
-    public void onItemLongClick(int position) {}
+    public void onItemLongClick(int position) {
+        this.position = position;
+        this.performLongClick();
+    }
+
+    public int getPosition() {
+        return position;
+    }
 }

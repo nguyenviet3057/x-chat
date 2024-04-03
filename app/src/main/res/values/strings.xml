@@ -1,5 +1,9 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="random_long_string">1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</string>
     <string name="app_name">X-Chat</string>
+    <string name="recent_message_tab">Recent message</string>
+    <string name="active_message_tab">Active</string>
     <string name="et_placeholder">Aa..</string>
+
+    <string name="sender_main_user_alias">You</string>
 </resources>

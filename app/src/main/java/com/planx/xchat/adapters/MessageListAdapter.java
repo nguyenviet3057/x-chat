@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.planx.xchat.R;
-import com.planx.xchat.entities.Message;
+import com.planx.xchat.sqlite.Message;
 import com.planx.xchat.entities.User;
 import com.planx.xchat.enums.MessageType;
 import com.planx.xchat.interfaces.IOnItemClickListener;

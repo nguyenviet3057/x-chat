@@ -20,7 +20,7 @@ public class SessionManager {
 
     public void setUserData() {
         editor.putInt(USER_ID, User.getInstance().getId());
-        editor.putString(USER_NAME, User.getInstance().getName());
+        editor.putString(USER_NAME, User.getInstance().getFirstName());
         editor.putString(USER_AVATAR, User.getInstance().getAvatar());
     }
 }

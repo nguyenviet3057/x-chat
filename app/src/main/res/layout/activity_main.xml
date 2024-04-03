@@ -3,90 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".activities.MainActivity">
+    android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/tbHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/mint"
-        android:minHeight="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:minHeight="50dp"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.planx.xchat.extensions.LinearLayoutIOnItemClickListener
-        android:id="@+id/llMessageHistoryContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:gravity="bottom"
-        android:orientation="vertical"
-        android:paddingBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/llChatFunction"
-        app:layout_constraintTop_toBottomOf="@+id/tbHeader">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvMessageList"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:foregroundGravity="bottom"
-            android:paddingVertical="5dp" />
-    </com.planx.xchat.extensions.LinearLayoutIOnItemClickListener>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/llChatFunction"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvRoomList"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="5dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <ScrollView
-            android:id="@+id/scrollView2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginEnd="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/imageButton"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <EditText
-                android:id="@+id/etMessage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:background="@drawable/message_text_input_background"
-                android:gravity="center_vertical"
-                android:hint="@string/et_placeholder"
-                android:inputType="textMultiLine"
-                android:maxLines="6"
-                android:minHeight="48dp"
-                android:minLines="1"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
-                android:textSize="16sp" />
-        </ScrollView>
-
-        <ImageButton
-            android:id="@+id/imageButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="6dp"
-            android:background="@drawable/cicle_send_button"
-            android:padding="3dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/scrollView2"
-            app:srcCompat="@android:drawable/ic_menu_send" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tbHeader" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

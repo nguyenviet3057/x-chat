@@ -1,8 +1,7 @@
-package com.planx.xchat.entities;
+package com.planx.xchat.sqlite;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class Message {
     private String id;
@@ -13,9 +12,13 @@ public class Message {
     private String senderAvatar;
     private int receiverId;
     private String receiverName;
+    private String receiverAvatar;
     private Date timestamp;
 
-    public Message(String id, String chat, ArrayList<String> images, int senderId, String senderName, String senderAvatar, int receiverId, String receiverName, Date timestamp) {
+    public Message() {
+    }
+
+    public Message(String id, String chat, ArrayList<String> images, int senderId, String senderName, String senderAvatar, int receiverId, String receiverName, String receiverAvatar, Date timestamp) {
         this.id = id;
         this.chat = chat;
         this.images = images;
@@ -24,6 +27,7 @@ public class Message {
         this.senderAvatar = senderAvatar;
         this.receiverId = receiverId;
         this.receiverName = receiverName;
+        this.receiverAvatar = receiverAvatar;
         this.timestamp = timestamp;
     }
 
@@ -63,16 +67,16 @@ public class Message {
         return senderName;
     }
 
-    public void setSenderAvatar(String senderAvatar) {
-        this.senderAvatar = senderAvatar;
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
     public String getSenderAvatar() {
         return senderAvatar;
     }
 
-    public void setSenderName(String senderName) {
-        this.senderName = senderName;
+    public void setSenderAvatar(String senderAvatar) {
+        this.senderAvatar = senderAvatar;
     }
 
     public int getReceiverId() {
@@ -89,6 +93,14 @@ public class Message {
 
     public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
+    }
+
+    public String getReceiverAvatar() {
+        return receiverAvatar;
+    }
+
+    public void setReceiverAvatar(String receiverAvatar) {
+        this.receiverAvatar = receiverAvatar;
     }
 
     public Date getTimestamp() {

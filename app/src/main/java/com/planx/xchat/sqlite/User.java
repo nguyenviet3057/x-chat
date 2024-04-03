@@ -1,4 +1,4 @@
-package com.planx.xchat.entities;
+package com.planx.xchat.sqlite;
 
 public class User {
     private int id;
@@ -6,17 +6,8 @@ public class User {
     private String lastName;
     private String fullName;
     private String avatar;
-    private static User instance;
 
-    private User() {
-        id = 1;
-    }
-
-    public static User getInstance() {
-        if (instance == null) {
-            instance = new User();
-        }
-        return instance;
+    public User() {
     }
 
     public int getId() {
