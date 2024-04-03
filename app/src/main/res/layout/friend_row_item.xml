@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:padding="10dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivFriendAvatar"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:padding="4.8dp"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/circle"
+        app:strokeColor="@color/darkMint"
+        app:strokeWidth="0.8dp"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/tvFriendName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ivFriendAvatar"
+        android:layout_centerInParent="true"
+        android:ellipsize="end"
+        android:maxWidth="64dp"
+        android:singleLine="true"
+        android:text="TextView" />
+</RelativeLayout>

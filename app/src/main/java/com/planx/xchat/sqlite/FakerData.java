@@ -12,6 +12,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class FakerData {
+
+    public static ArrayList<Room> fakerRoomList;
+    public static ArrayList<User> fakerUserList;
+
     public static ArrayList<Room> generateRoomList() throws JsonProcessingException {
         Faker faker = new Faker();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -46,6 +50,7 @@ public class FakerData {
 
             userList.add(user);
         }
+        fakerUserList = userList;
 
         com.planx.xchat.entities.User.getInstance().setId(userList.get(0).getId());
         com.planx.xchat.entities.User.getInstance().setFirstName(userList.get(0).getFirstName());
@@ -58,10 +63,17 @@ public class FakerData {
                 {}, // Empty first array because following code start index at 1
                 {1, 2},
                 {2, 3},
-                {1, 5}
+                {1, 5},
+                {2, 6},
+                {5, 2},
+                {1, 7},
+                {1, 9},
+                {4, 5},
+                {1, 4},
+                {8, 9}
         };
         ArrayList<Room> roomList = new ArrayList<>();
-        for (int roomIndex = 1; roomIndex <= 3; roomIndex++) {
+        for (int roomIndex = 1; roomIndex <= roomParticipants.length - 1; roomIndex++) {
             Room room = new Room();
             room.setId(UUID.randomUUID().toString());
 
@@ -70,7 +82,7 @@ public class FakerData {
             for (int messageIndex = 1; messageIndex <= 30; messageIndex++) {
                 Message message = new Message();
                 message.setId(UUID.randomUUID().toString());
-                message.setChat(faker.lorem().sentence(16, 20));
+                message.setChat(faker.lorem().sentence(8, 20));
                 message.setImages(new ArrayList<>());
                 message.setSenderId(roomParticipant[faker.random().nextInt(0, 1)]);
                 message.setSenderName(userList.get(message.getSenderId()).getFirstName());
@@ -98,6 +110,7 @@ public class FakerData {
 
             roomList.add(room);
         }
+        fakerRoomList = roomList;
 
         return roomList;
     }

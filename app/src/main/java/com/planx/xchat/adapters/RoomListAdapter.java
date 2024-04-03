@@ -1,6 +1,5 @@
 package com.planx.xchat.adapters;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.planx.xchat.R;
-import com.planx.xchat.entities.Message;
 import com.planx.xchat.sqlite.Room;
 import com.planx.xchat.entities.User;
 import com.planx.xchat.interfaces.IOnItemClickListener;
@@ -57,10 +55,10 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
 
     @Override
     public int getItemCount() {
-        if (roomList != null && roomList.size() > 0) {
+        if (roomList != null && roomList.size() > 0)
             return roomList.size();
-        }
-        return 0;
+        else
+            return 0;
     }
 
     public class RoomListViewHolder extends RecyclerView.ViewHolder {
@@ -73,7 +71,7 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
 
         public RoomListViewHolder(@NonNull View itemView) {
             super(itemView);
-            rlMessageItem = itemView.findViewById(R.id.rlMessageItem);
+            rlMessageItem = itemView.findViewById(R.id.clMessageItem);
             ivAvatar = itemView.findViewById(R.id.ivAvatar);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvLastChat = itemView.findViewById(R.id.tvLastChat);

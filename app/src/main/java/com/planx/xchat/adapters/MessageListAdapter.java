@@ -1,17 +1,15 @@
 package com.planx.xchat.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -20,6 +18,7 @@ import com.planx.xchat.sqlite.Message;
 import com.planx.xchat.entities.User;
 import com.planx.xchat.enums.MessageType;
 import com.planx.xchat.interfaces.IOnItemClickListener;
+import com.planx.xchat.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -61,7 +60,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         holder.tvChat.setText(message.getChat());
 
         if (position > 0 && messageList.get(position - 1).getSenderId() == message.getSenderId()) { // Hide avatar if previous message belong to the same user
-            holder.rlMessageItem.setPadding(holder.rlMessageItem.getPaddingLeft(), 5, holder.rlMessageItem.getPaddingRight(), 0);
+            holder.rlMessageItem.setPadding(holder.rlMessageItem.getPaddingLeft(), holder.rlMessageItem.getPaddingTop(), holder.rlMessageItem.getPaddingRight(), 0);
 
             if (message.getSenderId() != User.getInstance().getId()) {
                 holder.ivAvatar.setVisibility(View.INVISIBLE);
@@ -72,7 +71,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             }
             if (message.getSenderId() != User.getInstance().getId()) { // Show avatar if sender is not main user and the current message is the first of the group message
                 Glide.with(context).load(message.getSenderAvatar()).into(holder.ivAvatar);
+                holder.ivAvatar.setVisibility(View.VISIBLE);
             }
+        }
+
+        if (position == 0) {
+            holder.rlMessageItem.setPadding(holder.rlMessageItem.getPaddingLeft(), holder.rlMessageItem.getPaddingTop(), holder.rlMessageItem.getPaddingRight(), Utils.dp2px(holder.rlMessageItem.getResources(), 30));
         }
     }
 
@@ -86,13 +90,13 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
     public class MessageListViewHolder extends RecyclerView.ViewHolder {
 
-        RelativeLayout rlMessageItem;
+        ConstraintLayout rlMessageItem;
         ImageView ivAvatar;
         TextView tvChat;
 
         public MessageListViewHolder(@NonNull View itemView) {
             super(itemView);
-            rlMessageItem = itemView.findViewById(R.id.rlMessageItem);
+            rlMessageItem = itemView.findViewById(R.id.clMessageItem);
             ivAvatar = itemView.findViewById(R.id.ivAvatar);
             tvChat = itemView.findViewById(R.id.tvChat);
 

@@ -31,7 +31,7 @@
         android:layout_toEndOf="@+id/ivAvatar"
         android:text="TextView" />
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvUserName"
@@ -39,38 +39,75 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_toEndOf="@+id/ivAvatar"
-        android:gravity="center_vertical">
+        android:layout_toEndOf="@+id/ivAvatar">
 
         <TextView
             android:id="@+id/tvLastChat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginEnd="2dp"
-            android:layout_toStartOf="@+id/tvCenterDot"
             android:ellipsize="end"
-            android:lines="1"
-            android:text="TextView" />
+            android:singleLine="true"
+            android:text="Ok"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toStartOf="@id/brEndOfLastChat"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvCenterDot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="2dp"
-            android:layout_toStartOf="@+id/tvLastTime"
+            android:layout_marginStart="2dp"
             android:gravity="center"
             android:text="\u00b7"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/brEndOfCenterDot"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/brEndOfLastChat"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvLastTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:text="Time" />
+            android:layout_marginStart="2dp"
+            android:singleLine="true"
+            android:text="Time"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/tvCenterDot"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </RelativeLayout>
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/brEndOfLastChat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:barrierDirection="end"
+            app:constraint_referenced_ids="tvLastChat" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/brEndOfCenterDot"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:barrierDirection="end"
+            app:constraint_referenced_ids="tvCenterDot" />
+
+        <!--        <androidx.constraintlayout.widget.Guideline-->
+        <!--            android:id="@+id/glCenter"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:orientation="vertical"-->
+        <!--            app:layout_constraintGuide_percent="1" />-->
+
+        <!--        <androidx.constraintlayout.widget.Group-->
+        <!--            android:id="@+id/grLastchatLasttime"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            app:constraint_referenced_ids="tvLastChat,tvLastTime"-->
+        <!--            app:layout_constraintEnd_toEndOf="@id/glCenter"-->
+        <!--            app:layout_constraintStart_toStartOf="@id/glCenter" />-->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </RelativeLayout>

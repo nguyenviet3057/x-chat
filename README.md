@@ -1,0 +1,1 @@
+- User's avatar only shows on the last message in group message because of Collections.reverse(messageList)

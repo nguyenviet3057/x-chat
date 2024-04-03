@@ -5,18 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.planx.xchat.entities.Message;
 import com.planx.xchat.entities.User;
-import com.planx.xchat.utils.Utils;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -48,12 +42,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 ")";
         db.execSQL(CREATE_ROOMS_TABLE);
 
-        // Sample data
-        try {
-            addSampleData();
-        } catch (Exception ex) {
-            Log.e("Add sample data to SQLite", ex.getMessage());
-        }
+        String CREATE_FRIENDS_TABLE = "CREATE TABLE friends(" +
+                "id INTEGER PRIMARY KEY," +
+                "firstName TEXT," +
+                "lastName TEXT," +
+                "fullName TEXT," +
+                "avatar TEXT" +
+                ")";
+        db.execSQL(CREATE_FRIENDS_TABLE);
     }
 
     @Override
@@ -65,9 +61,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         try {
             db = this.getWritableDatabase();
 
-            Type listType = new TypeToken<ArrayList<Room>>(){}.getType();
-            Gson gson = new Gson();
-
+//            Type listType = new TypeToken<ArrayList<Room>>(){}.getType();
+//            Gson gson = new Gson();
 //            ArrayList<Room> roomList = gson.fromJson(Utils.readJsonFileFromAssets(context, "room_list.json"), listType);
             ArrayList<Room> roomList = FakerData.generateRoomList();
             for (int i = 0; i < roomList.size(); i++) {
@@ -89,6 +84,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 db.insert("rooms", "", values);
             }
 
+            ArrayList<com.planx.xchat.sqlite.User> friendList = FakerData.fakerUserList;
+            for (int i = 0; i < friendList.size(); i++) {
+                com.planx.xchat.sqlite.User friend = friendList.get(i);
+                ContentValues values = new ContentValues();
+                values.put("id", friend.getId()); // Contact Name
+                values.put("firstName", friend.getFirstName());
+                values.put("lastName", friend.getLastName());
+                values.put("fullName", friend.getFullName());
+                values.put("avatar", friend.getAvatar());
+
+                db.insert("friends", "", values);
+            }
+
 
         } catch (Exception ex) {
             throw new Exception(ex.getMessage());
@@ -97,7 +105,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
-    public ArrayList<Room> getAllRoom() {
+    public ArrayList<Room> getAllRooms() {
         ArrayList<Room> roomList = new ArrayList<>();
         String selectQuery = "SELECT  * FROM rooms WHERE senderId = " + User.getInstance().getId() + " OR receiverId = " + User.getInstance().getId();
 
@@ -123,5 +131,52 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
 
         return roomList;
+    }
+
+    public Room findRoomById(String id) {
+        String selectQuery = "SELECT  * FROM rooms WHERE id = '" + id + "' AND (senderId = " + User.getInstance().getId() + " OR receiverId = " + User.getInstance().getId() + ")";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        Room room = new Room();
+        if (cursor.moveToFirst()) {
+            do {
+                room.setId(cursor.getString(0));
+                room.setLastChat(cursor.getString(1));
+                room.setLastId(cursor.getInt(2));
+                room.setSenderId(cursor.getInt(3));
+                room.setSenderName(cursor.getString(4));
+                room.setSenderAvatar(cursor.getString(5));
+                room.setReceiverId(cursor.getInt(6));
+                room.setReceiverName(cursor.getString(7));
+                room.setReceiverAvatar(cursor.getString(8));
+                room.setMessageListJson(cursor.getString(9));
+            } while (cursor.moveToNext());
+        }
+
+        return room;
+    }
+
+    public ArrayList<com.planx.xchat.sqlite.User> getAllFriends() {
+        ArrayList<com.planx.xchat.sqlite.User> friendList = new ArrayList<>();
+        String selectQuery = "SELECT  * FROM friends WHERE id != " + User.getInstance().getId();
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                com.planx.xchat.sqlite.User friend = new com.planx.xchat.sqlite.User();
+                friend.setId(cursor.getInt(0));
+                friend.setFirstName(cursor.getString(1));
+                friend.setLastName(cursor.getString(2));
+                friend.setFullName(cursor.getString(3));
+                friend.setAvatar(cursor.getString(4));
+                friendList.add(friend);
+            } while (cursor.moveToNext());
+        }
+
+        return friendList;
     }
 }
