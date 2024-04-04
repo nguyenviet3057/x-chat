@@ -1,1 +1,2 @@
 - User's avatar only shows on the last message in group message because of Collections.reverse(messageList)
+- Un-comment the mock-up data in MainActivity before run
