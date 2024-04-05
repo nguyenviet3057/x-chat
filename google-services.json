@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "597152311520",
+    "project_id": "xchat-59115",
+    "storage_bucket": "xchat-59115.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:597152311520:android:b9679f6617cb1aaf30c885",
+        "android_client_info": {
+          "package_name": "com.planx.xchat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDS7E1QqoCubqXDVUzJjKZVaeUWTFZhQEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

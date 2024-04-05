@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -48,9 +49,12 @@ dependencies {
 
     // For fake sample data
     implementation("com.github.javafaker:javafaker:1.0.2")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.4")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }
