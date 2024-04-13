@@ -27,6 +27,7 @@ import com.planx.xchat.adapters.RoomListAdapter;
 import com.planx.xchat.constants.Constants;
 import com.planx.xchat.contexts.SharedPreferencesManager;
 import com.planx.xchat.databinding.ActivityMainBinding;
+import com.planx.xchat.firebase.firestore.UserDocument;
 import com.planx.xchat.interfaces.ICallback;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.firebase.database.RoomReference;
@@ -73,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
         friendList.add(0, MainUser.getInstance().toSQLiteUser());
         friendListAdapter = new FriendListAdapter(MainActivity.this, friendList, new IOnItemClickListener() {
             @Override
@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         binding.rvRoomList.setAdapter(roomListAdapter);
         binding.rvRoomList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
-//        retrieveFriendList();
         trackUserFriendsAndRooms();
     }
 
@@ -123,8 +122,10 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 if (value != null && value.exists() && value.toObject(MainUser.class) != null) {
+                    UserDocument userDocument = value.toObject(UserDocument.class);
+
                     if (value.contains(Constants.docUserPathFriends)) {
-                        MainUser.getInstance().setFriends(value.toObject(MainUser.class).getFriends());
+                        MainUser.getInstance().setFriends(userDocument.getFriends());
                         SharedPreferencesManager.getInstance().setUserData();
                         XChat.firestore.collection(XChat.colUsers).whereIn(FieldPath.documentId(), MainUser.getInstance().getFriends()).addSnapshotListener(new EventListener<QuerySnapshot>() {
                             @Override
@@ -146,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     if (value.contains(Constants.docUserPathRooms)) {
-                        MainUser.getInstance().setRooms(value.toObject(MainUser.class).getRooms());
+                        MainUser.getInstance().setRooms(userDocument.getRooms());
                         SharedPreferencesManager.getInstance().setUserData();
                         List<String> roomIds = MainUser.getInstance().getRooms();
                         for (String roomId :

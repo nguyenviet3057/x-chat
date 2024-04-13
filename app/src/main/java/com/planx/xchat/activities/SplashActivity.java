@@ -61,14 +61,8 @@ public class SplashActivity extends AppCompatActivity {
                 public void onFailure(Throwable throwable) {
                     Log.e(this.toString(), throwable.getMessage());
                     Toast.makeText(SplashActivity.this, "Error auto log in", Toast.LENGTH_LONG).show();
-                    XChat.firestore.collection(XChat.colUsers).document(MainUser.getInstance().getId()).get().addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                            startActivity(intent);
-                        } else {
-                            Toast.makeText(SplashActivity.this, "Error getting user account", Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                    startActivity(intent);
                 }
             });
         }

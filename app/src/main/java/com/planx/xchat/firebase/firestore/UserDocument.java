@@ -1,35 +1,26 @@
 package com.planx.xchat.firebase.firestore;
 
+import java.util.List;
 import java.util.Map;
 
 public class UserDocument {
-    private String id;
     private String firstName;
     private String lastName;
     private String fullName;
     private String avatar;
-    private Map<String, Boolean> friends;
-    private Map<String, Boolean> rooms;
+    private List<String> friends;
+    private List<String> rooms;
 
     public UserDocument() {
     }
 
-    public UserDocument(String id, String firstName, String lastName, String fullName, String avatar, Map<String, Boolean> friends, Map<String, Boolean> rooms) {
-        this.id = id;
+    public UserDocument(String firstName, String lastName, String fullName, String avatar, List<String> friends, List<String> rooms) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.fullName = fullName;
         this.avatar = avatar;
         this.friends = friends;
         this.rooms = rooms;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getFirstName() {
@@ -64,19 +55,19 @@ public class UserDocument {
         this.avatar = avatar;
     }
 
-    public Map<String, Boolean> getFriends() {
+    public List<String> getFriends() {
         return friends;
     }
 
-    public void setFriends(Map<String, Boolean> friends) {
+    public void setFriends(List<String> friends) {
         this.friends = friends;
     }
 
-    public Map<String, Boolean> getRooms() {
+    public List<String> getRooms() {
         return rooms;
     }
 
-    public void setRooms(Map<String, Boolean> rooms) {
+    public void setRooms(List<String> rooms) {
         this.rooms = rooms;
     }
 }

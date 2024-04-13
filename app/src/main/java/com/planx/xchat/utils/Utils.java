@@ -14,10 +14,37 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class Utils {
     public static final int dp2px(float dp) {
         return (int) (dp * XChat.resources.getDisplayMetrics().density + 0.5f);
+    }
+
+    public static String formatLastTime(long timeMillis) {
+        Instant now = Instant.now();
+        Instant messageTime = Instant.ofEpochMilli(timeMillis);
+        Duration duration = Duration.between(messageTime, now);
+
+        long seconds = duration.getSeconds();
+
+        if (seconds < 60) {
+            return "just now";
+        } else if (seconds < 60 * 60) {
+            long minutes = seconds / 60;
+            return minutes + "m ago";
+        } else if (seconds < 60 * 60 * 24 * 2) {
+            long hours = seconds / (60 * 60);
+            return hours + "h ago";
+        } else {
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(messageTime, ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            return localDateTime.format(formatter);
+        }
     }
 
     public static String readJsonFileFromAssets(Context context, String filename) {

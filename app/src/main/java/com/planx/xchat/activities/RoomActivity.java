@@ -76,7 +76,6 @@ public class RoomActivity extends AppCompatActivity {
                         room = roomReference.toSQLiteRoom();
                         room.setId(roomId);
                         room.setLastId(MainUser.getInstance().getId());
-                        room.getParticipants().add(MainUser.getInstance().toSQLiteUser());
                         room.setSenderId(MainUser.getInstance().getId());
                         room.setSenderName(MainUser.getInstance().getFirstName());
                         room.setSenderAvatar(MainUser.getInstance().getAvatar());
@@ -91,11 +90,12 @@ public class RoomActivity extends AppCompatActivity {
                                         room.getParticipants().add(docUser.toObject(User.class));
                                     }
 
-                                    if (room.getParticipants().size() == 2) { // Only main user and their friend (two-person room)
+                                    if (room.getParticipants().size() == 1) { // Only main user and their friend (two-person room)
                                         room.setReceiverId(room.getParticipants().get(0).getId());
                                         room.setReceiverName(room.getParticipants().get(0).getFirstName());
                                         room.setReceiverAvatar(room.getParticipants().get(0).getAvatar());
                                     }
+                                    room.getParticipants().add(MainUser.getInstance().toSQLiteUser());
                                     showMessageList();
                                 } else {
                                     Toast.makeText(RoomActivity.this, "Error getting participants", Toast.LENGTH_LONG).show();
@@ -111,16 +111,8 @@ public class RoomActivity extends AppCompatActivity {
                 });
             }
         } else {
-//            this.roomKey = db.getAllRooms().get(0).getId();
             Toast.makeText(this, getResources().getString(R.string.roomNotFound), Toast.LENGTH_LONG).show();
         }
-
-//        room = db.findRoomById(roomKey);
-//        if (room.getSenderId().equals(MainUser.getInstance().getId())) {
-//            receiver = new com.planx.xchat.entities.User(room.getReceiverId(), room.getReceiverName(), "", "", room.getReceiverAvatar());
-//        } else {
-//            receiver = new com.planx.xchat.entities.User(room.getSenderId(), room.getSenderName(), "", "", room.getSenderAvatar());
-//        }
 
         binding.llMessageHistoryContainer.setOnClickListener(v -> {
             // Hide keyboard
@@ -165,11 +157,11 @@ public class RoomActivity extends AppCompatActivity {
             messageRef.child(messageKey).setValue(message).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     room.setLastChat(messageText);
+                    room.setTimestamp(Date.from(Instant.now()));
                     Map<String, Object> updateRoom = new HashMap<>();
                     updateRoom.put(room.getId(), room.toRoomReference());
                     XChat.database.getReference().child(XChat.refRooms).updateChildren(updateRoom);
 
-//                    messageListAdapter.addNewMessage(message); // Already added in onValueChangeListener
                     binding.etMessage.setText("");
                     binding.rvMessageList.scrollToPosition(0);
                 } else {
@@ -178,8 +170,6 @@ public class RoomActivity extends AppCompatActivity {
                 }
             });
         });
-
-//        showOldMessageList();
     }
 
     private void showMessageList() {
@@ -221,24 +211,5 @@ public class RoomActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    private void showOldMessageList() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(Date.class, new DateLongIntFormatAdapter());
-        Gson gson = gsonBuilder.create();
-        Type listType = new TypeToken<ArrayList<Message>>(){}.getType();
-//        messageList = gson.fromJson(room.getMessageListJson(), listType); // Sorted time_stamp descending
-        messageListAdapter = new MessageListAdapter(this, messageList, binding.llMessageHistoryContainer);
-        binding.rvMessageList.setAdapter(messageListAdapter);
-
-//        rvMessageList.addItemDecoration(new DividerItemDecoration(rvMessageList.getContext(), DividerItemDecoration.VERTICAL));
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setReverseLayout(true);
-
-        binding.rvMessageList.setLayoutManager(layoutManager);
-        if ((binding.rvMessageList.getItemAnimator()) != null) {
-            ((SimpleItemAnimator) binding.rvMessageList.getItemAnimator()).setSupportsChangeAnimations(false);
-        }
     }
 }

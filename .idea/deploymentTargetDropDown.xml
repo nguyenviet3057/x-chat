@@ -9,13 +9,13 @@
               <type value="RUNNING_DEVICE_TARGET" />
               <deviceKey>
                 <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\nguye\.android\avd\Android_14_-_API_34.avd" />
+                  <type value="SERIAL_NUMBER" />
+                  <value value="HGR441WW" />
                 </Key>
               </deviceKey>
             </Target>
           </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-04-13T11:28:45.853826500Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-04-13T12:00:23.242479700Z" />
         </State>
       </entry>
     </value>

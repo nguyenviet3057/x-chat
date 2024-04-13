@@ -16,6 +16,7 @@ import com.planx.xchat.R;
 import com.planx.xchat.models.Room;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.interfaces.IOnItemClickListener;
+import com.planx.xchat.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -51,6 +52,8 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
             holder.tvUserName.setText(room.getSenderName());
             holder.tvLastChat.setText(room.getSenderName() + ": " + room.getLastChat());
         }
+
+        holder.tvLastTime.setText(Utils.formatLastTime(room.getTimestamp().getTime()));
     }
 
     @Override
