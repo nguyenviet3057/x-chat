@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.MessageActivity">
+    tools:context=".activities.RoomActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clToolbarHeader"
@@ -51,7 +51,7 @@
             android:layout_marginStart="48dp"
             android:layout_marginEnd="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/imageButton"
+            app:layout_constraintEnd_toStartOf="@+id/btnSend"
             app:layout_constraintStart_toStartOf="parent">
 
             <EditText
@@ -72,7 +72,7 @@
         </ScrollView>
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/btnSend"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginEnd="10dp"

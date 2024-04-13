@@ -1,21 +1,24 @@
-package com.planx.xchat.entities;
+package com.planx.xchat.models;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class Message {
     private String id;
     private String chat;
     private ArrayList<String> images;
-    private int senderId;
+    private String senderId;
     private String senderName;
     private String senderAvatar;
-    private int receiverId;
+    private String receiverId;
     private String receiverName;
+    private String receiverAvatar;
     private Date timestamp;
 
-    public Message(String id, String chat, ArrayList<String> images, int senderId, String senderName, String senderAvatar, int receiverId, String receiverName, Date timestamp) {
+    public Message() {
+    }
+
+    public Message(String id, String chat, ArrayList<String> images, String senderId, String senderName, String senderAvatar, String receiverId, String receiverName, String receiverAvatar, Date timestamp) {
         this.id = id;
         this.chat = chat;
         this.images = images;
@@ -24,6 +27,7 @@ public class Message {
         this.senderAvatar = senderAvatar;
         this.receiverId = receiverId;
         this.receiverName = receiverName;
+        this.receiverAvatar = receiverAvatar;
         this.timestamp = timestamp;
     }
 
@@ -51,11 +55,11 @@ public class Message {
         this.images = images;
     }
 
-    public int getSenderId() {
+    public String getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(int senderId) {
+    public void setSenderId(String senderId) {
         this.senderId = senderId;
     }
 
@@ -63,23 +67,23 @@ public class Message {
         return senderName;
     }
 
-    public void setSenderAvatar(String senderAvatar) {
-        this.senderAvatar = senderAvatar;
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
     public String getSenderAvatar() {
         return senderAvatar;
     }
 
-    public void setSenderName(String senderName) {
-        this.senderName = senderName;
+    public void setSenderAvatar(String senderAvatar) {
+        this.senderAvatar = senderAvatar;
     }
 
-    public int getReceiverId() {
+    public String getReceiverId() {
         return receiverId;
     }
 
-    public void setReceiverId(int receiverId) {
+    public void setReceiverId(String receiverId) {
         this.receiverId = receiverId;
     }
 
@@ -89,6 +93,14 @@ public class Message {
 
     public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
+    }
+
+    public String getReceiverAvatar() {
+        return receiverAvatar;
+    }
+
+    public void setReceiverAvatar(String receiverAvatar) {
+        this.receiverAvatar = receiverAvatar;
     }
 
     public Date getTimestamp() {

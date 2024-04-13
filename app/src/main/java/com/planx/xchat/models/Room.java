@@ -1,31 +1,47 @@
-package com.planx.xchat.sqlite;
+package com.planx.xchat.models;
 
-public class Room {
+import com.planx.xchat.firebase.database.RoomReference;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Room implements Serializable {
     private String id;
     private String lastChat;
-    private int lastId;
-    private int senderId;
+    private String lastId;
+    private List<User> participants;
+    private String senderId;
     private String senderName;
     private String senderAvatar;
-    private int receiverId;
+    private String receiverId;
     private String receiverName;
     private String receiverAvatar;
-    private String messageListJson;
+    private Date timestamp;
 
     public Room() {
+        participants = new ArrayList<>();
     }
 
-    public Room(String id, String lastChat, int lastId, int senderId, String senderName, String senderAvatar, int receiverId, String receiverName, String receiverAvatar, String messageListJson) {
+    public RoomReference toRoomReference() {
+        return new RoomReference(lastChat, lastId, participants.stream()
+                .collect(Collectors.toMap(User::getId, obj -> true)), senderId, senderName, senderAvatar, receiverId, receiverName, receiverAvatar, timestamp);
+    }
+
+    public Room(String id, String lastChat, String lastId, List<User> participants, String senderId, String senderName, String senderAvatar, String receiverId, String receiverName, String receiverAvatar, Date timestamp) {
         this.id = id;
         this.lastChat = lastChat;
         this.lastId = lastId;
+        this.participants = participants;
         this.senderId = senderId;
         this.senderName = senderName;
         this.senderAvatar = senderAvatar;
         this.receiverId = receiverId;
         this.receiverName = receiverName;
         this.receiverAvatar = receiverAvatar;
-        this.messageListJson = messageListJson;
+        this.timestamp = timestamp;
     }
 
     public String getId() {
@@ -44,19 +60,27 @@ public class Room {
         this.lastChat = lastChat;
     }
 
-    public int getLastId() {
+    public String getLastId() {
         return lastId;
     }
 
-    public void setLastId(int lastId) {
+    public void setLastId(String lastId) {
         this.lastId = lastId;
     }
 
-    public int getSenderId() {
+    public List<User> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<User> participants) {
+        this.participants = participants;
+    }
+
+    public String getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(int senderId) {
+    public void setSenderId(String senderId) {
         this.senderId = senderId;
     }
 
@@ -76,11 +100,11 @@ public class Room {
         this.senderAvatar = senderAvatar;
     }
 
-    public int getReceiverId() {
+    public String getReceiverId() {
         return receiverId;
     }
 
-    public void setReceiverId(int receiverId) {
+    public void setReceiverId(String receiverId) {
         this.receiverId = receiverId;
     }
 
@@ -100,11 +124,11 @@ public class Room {
         this.receiverAvatar = receiverAvatar;
     }
 
-    public String getMessageListJson() {
-        return messageListJson;
+    public Date getTimestamp() {
+        return timestamp;
     }
 
-    public void setMessageListJson(String messageListJson) {
-        this.messageListJson = messageListJson;
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
     }
 }

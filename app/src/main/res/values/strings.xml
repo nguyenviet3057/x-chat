@@ -2,13 +2,47 @@
     <string name="random_long_string">1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</string>
     <string name="app_name">X-Chat</string>
 
-    <string name="etUsername_placeholer">Username or Email</string>
-    <string name="etPassword_placeholer">Password</string>
+    <string name="etUsername_hint">Username</string>
+    <string name="etPassword_hint">Password</string>
+
+    <!--    Login layout -->
+    <string name="loginTitle">Login</string>
+    <string name="loginDescription">Please sign in to continue</string>
     <string name="btnLogin">Login</string>
+    <string name="askForSignup">Don\'t have an account?</string>
+    <string name="toSignup"><b><u>Sign up</u></b></string>
+    <string name="accountNotFound">Account not found!</string>
+    <string name="loginFailed">Login failed!</string>
 
-    <string name="recent_message_tab">Recent message</string>
-    <string name="active_message_tab">Active</string>
+    <!--    Signup layout -->
+    <string name="signupTitle">Sign up</string>
+    <string name="signupDescription">Welcome to <b>PlanX</b></string>
+    <string name="etFirstName_hint">First Name</string>
+    <string name="etLastName_hint">Last Name</string>
+    <string name="etPasswordConfirm_hint">Confirm Password</string>
+    <string name="btnSignup">Sign up</string>
+    <string name="askForLogin">Already have an account?</string>
+    <string name="toLogin"><b><u>Login</u></b></string>
+    <string name="incorrectConfirmPassword">Incorrect confirm password!</string>
+    <string name="pleaseFillTheForm">Please fill the form!</string>
+    <string name="signupFailed">Signup Failed!</string>
+    <string name="usernameExisted">Username is already existed!</string>
+
+    <!--    Main layout -->
+    <string name="failedRetrieveRoomList">Can not show your room(s)</string>
+    <string name="failedRetrieveFriendList">Can not show your friend(s)</string>
+
+    <!--    Message layout -->
+    <string name="messageListLimit">10</string>
+    <string name="failedMakeRoom">Can not make a new room for you all</string>
+    <string name="failedAddMessage">Can not send your message</string>
+    <string name="roomNotFound">Room not found</string>
+
+    <!--    Common -->
     <string name="et_placeholder">Aa..</string>
-
     <string name="sender_main_user_alias">You</string>
+
+    <!--    Intent extras -->
+    <!--    Main - Message -->
+    <string name="Main2MessageRoomId">roomId</string>
 </resources>

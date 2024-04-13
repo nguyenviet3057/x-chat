@@ -1,9 +1,12 @@
 package com.planx.xchat.utils;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.util.TypedValue;
+
+import com.planx.xchat.XChat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,8 +16,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class Utils {
-    public static final int dp2px(Resources r, float dp) {
-        return (int) (dp * r.getDisplayMetrics().density + 0.5f);
+    public static final int dp2px(float dp) {
+        return (int) (dp * XChat.resources.getDisplayMetrics().density + 0.5f);
     }
 
     public static String readJsonFileFromAssets(Context context, String filename) {

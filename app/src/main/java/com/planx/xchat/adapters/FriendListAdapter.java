@@ -12,8 +12,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.planx.xchat.R;
+import com.planx.xchat.XChat;
+import com.planx.xchat.models.MainUser;
 import com.planx.xchat.interfaces.IOnItemClickListener;
-import com.planx.xchat.sqlite.User;
+import com.planx.xchat.models.User;
 
 import java.util.ArrayList;
 
@@ -40,7 +42,11 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
     public void onBindViewHolder(@NonNull FriendListViewHolder holder, int position) {
         User friend = friendList.get(position);
         Glide.with(context).load(friend.getAvatar()).into(holder.ivFriendAvatar);
-        holder.tvFriendName.setText(friend.getFirstName());
+
+        if (friend.getId() == MainUser.getInstance().getId())
+            holder.tvFriendName.setText(XChat.resources.getString(R.string.sender_main_user_alias));
+        else
+            holder.tvFriendName.setText(friend.getFirstName());
     }
 
     @Override
@@ -49,6 +55,19 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
             return friendList.size();
         else
             return 0;
+    }
+
+    public void addOrUpdate(User friend) {
+        for (int i = 0; i < friendList.size(); i++) {
+            if (friendList.get(i).getId().equals(friend.getId())) {
+                friendList.set(i, friend);
+                notifyItemChanged(i, 1);
+                return;
+            }
+        }
+
+        friendList.add(friend);
+        notifyItemInserted(friendList.size() - 1);
     }
 
     class FriendListViewHolder extends RecyclerView.ViewHolder {

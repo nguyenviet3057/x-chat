@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.planx.xchat" />
+                  <option name="mobileSdkAppId" value="1:597152311520:android:b9679f6617cb1aaf30c885" />
+                  <option name="projectId" value="xchat-59115" />
+                  <option name="projectNumber" value="597152311520" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

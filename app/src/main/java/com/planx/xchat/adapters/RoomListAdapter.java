@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.planx.xchat.R;
-import com.planx.xchat.sqlite.Room;
-import com.planx.xchat.entities.User;
+import com.planx.xchat.models.Room;
+import com.planx.xchat.models.MainUser;
 import com.planx.xchat.interfaces.IOnItemClickListener;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
     public void onBindViewHolder(@NonNull RoomListViewHolder holder, int position) {
         Room room = roomList.get(position);
 
-        if (room.getSenderId() == User.getInstance().getId()) {
+        if (room.getSenderId() == MainUser.getInstance().getId()) {
             Glide.with(context).load(room.getReceiverAvatar()).into(holder.ivAvatar);
             holder.tvUserName.setText(room.getReceiverName());
             holder.tvLastChat.setText(context.getString(R.string.sender_main_user_alias) + ": " + room.getLastChat());
@@ -59,6 +59,20 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
             return roomList.size();
         else
             return 0;
+    }
+
+    public void addOrUpdate(Room room) {
+        for (int i = 0; i < roomList.size(); i++) {
+            if (roomList.get(i).getId().equals(room.getId())) {
+                roomList.set(i, room);
+                notifyItemChanged(i, 1);
+                return;
+            }
+        }
+
+        roomList.add(0, room);
+        notifyItemChanged(0, 1);
+        notifyItemInserted(0);
     }
 
     public class RoomListViewHolder extends RecyclerView.ViewHolder {

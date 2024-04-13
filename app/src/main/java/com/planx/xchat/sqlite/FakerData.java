@@ -3,9 +3,11 @@ package com.planx.xchat.sqlite;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
+import com.planx.xchat.models.MainUser;
+import com.planx.xchat.models.Message;
+import com.planx.xchat.models.Room;
+import com.planx.xchat.models.User;
 
-import java.sql.Date;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
@@ -39,7 +41,7 @@ public class FakerData {
         ArrayList<User> userList = new ArrayList<>();
         for (int userIndex = 1; userIndex <= 10; userIndex++) {
             User user = new User();
-            user.setId(userIndex);
+//            user.setId(userIndex);
             user.setFirstName(faker.name().firstName());
             user.setLastName(faker.name().lastName());
             user.setFullName(user.getFirstName() + " " + user.getLastName());
@@ -52,11 +54,11 @@ public class FakerData {
         }
         fakerUserList = userList;
 
-        com.planx.xchat.entities.User.getInstance().setId(userList.get(0).getId());
-        com.planx.xchat.entities.User.getInstance().setFirstName(userList.get(0).getFirstName());
-        com.planx.xchat.entities.User.getInstance().setLastName(userList.get(0).getLastName());
-        com.planx.xchat.entities.User.getInstance().setFullName(userList.get(0).getFullName());
-        com.planx.xchat.entities.User.getInstance().setAvatar(userList.get(0).getAvatar());
+//        MainUser.getInstance().setId(userList.get(0).getId());
+        MainUser.getInstance().setFirstName(userList.get(0).getFirstName());
+        MainUser.getInstance().setLastName(userList.get(0).getLastName());
+        MainUser.getInstance().setFullName(userList.get(0).getFullName());
+        MainUser.getInstance().setAvatar(userList.get(0).getAvatar());
 
         // Fake room list
         int[][] roomParticipants = {
@@ -84,12 +86,12 @@ public class FakerData {
                 message.setId(UUID.randomUUID().toString());
                 message.setChat(faker.lorem().sentence(8, 20));
                 message.setImages(new ArrayList<>());
-                message.setSenderId(roomParticipant[faker.random().nextInt(0, 1)]);
-                message.setSenderName(userList.get(message.getSenderId()).getFirstName());
-                message.setSenderAvatar(userList.get(message.getSenderId()).getAvatar());
-                message.setReceiverId(message.getSenderId() == roomParticipant[0] ? roomParticipant[1] : roomParticipant[0]);
-                message.setReceiverName(userList.get(message.getReceiverId()).getFirstName());
-                message.setReceiverAvatar(userList.get(message.getReceiverId()).getAvatar());
+//                message.setSenderId(roomParticipant[faker.random().nextInt(0, 1)]);
+//                message.setSenderName(userList.get(message.getSenderId()).getFirstName());
+//                message.setSenderAvatar(userList.get(message.getSenderId()).getAvatar());
+//                message.setReceiverId(message.getSenderId() == roomParticipant[0] ? roomParticipant[1] : roomParticipant[0]);
+//                message.setReceiverName(userList.get(message.getReceiverId()).getFirstName());
+//                message.setReceiverAvatar(userList.get(message.getReceiverId()).getAvatar());
                 message.setTimestamp(faker.date().between(faker.date().past(20, TimeUnit.DAYS), faker.date().past(1, TimeUnit.SECONDS))); //
 //                message.setTimestamp(Date.from(Instant.now()));
 
@@ -106,7 +108,7 @@ public class FakerData {
             room.setReceiverName(messageList.get(0).getReceiverName());
             room.setReceiverAvatar(messageList.get(0).getReceiverAvatar());
 
-            room.setMessageListJson(objectMapper.writeValueAsString(messageList));
+//            room.setMessageListJson(objectMapper.writeValueAsString(messageList));
 
             roomList.add(room);
         }
