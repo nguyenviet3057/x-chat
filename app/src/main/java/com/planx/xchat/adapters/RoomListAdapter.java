@@ -43,7 +43,7 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
     public void onBindViewHolder(@NonNull RoomListViewHolder holder, int position) {
         Room room = roomList.get(position);
 
-        if (room.getSenderId() == MainUser.getInstance().getId()) {
+        if (room.getSenderId().equals(MainUser.getInstance().getId())) {
             Glide.with(context).load(room.getReceiverAvatar()).into(holder.ivAvatar);
             holder.tvUserName.setText(room.getReceiverName());
             holder.tvLastChat.setText(context.getString(R.string.sender_main_user_alias) + ": " + room.getLastChat());

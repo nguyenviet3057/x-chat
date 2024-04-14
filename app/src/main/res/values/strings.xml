@@ -31,6 +31,8 @@
     <!--    Main layout -->
     <string name="failedRetrieveRoomList">Can not show your room(s)</string>
     <string name="failedRetrieveFriendList">Can not show your friend(s)</string>
+    <string name="findFriend">Find your friends</string>
+    <string name="chats">Chats</string>
 
     <!--    Message layout -->
     <string name="messageListLimit">10</string>

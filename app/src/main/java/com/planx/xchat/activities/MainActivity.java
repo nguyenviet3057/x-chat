@@ -74,6 +74,18 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        binding.svSearchResult.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SearchActivity.class);
+            startActivity(intent);
+        });
+
+        binding.ibLogout.setOnClickListener(v -> {
+            SharedPreferencesManager.getInstance().clearData();
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
         friendList.add(0, MainUser.getInstance().toSQLiteUser());
         friendListAdapter = new FriendListAdapter(MainActivity.this, friendList, new IOnItemClickListener() {
             @Override
@@ -127,23 +139,25 @@ public class MainActivity extends AppCompatActivity {
                     if (value.contains(Constants.docUserPathFriends)) {
                         MainUser.getInstance().setFriends(userDocument.getFriends());
                         SharedPreferencesManager.getInstance().setUserData();
-                        XChat.firestore.collection(XChat.colUsers).whereIn(FieldPath.documentId(), MainUser.getInstance().getFriends()).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                            @Override
-                            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                                if (error != null) {
-                                    Log.w(this.toString(), "Listen failed.");
-                                    return;
-                                }
-                                if (value != null) {
-                                    for (DocumentSnapshot docUser :
-                                            value.getDocuments()) {
-                                        friendListAdapter.addOrUpdate(docUser.toObject(User.class));
+                        if (MainUser.getInstance().getFriends().size() > 0) {
+                            XChat.firestore.collection(XChat.colUsers).whereIn(FieldPath.documentId(), MainUser.getInstance().getFriends()).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                    if (error != null) {
+                                        Log.w(this.toString(), "Listen failed.");
+                                        return;
                                     }
-                                } else {
-                                    Log.d(this.toString(), "Current data: null");
+                                    if (value != null) {
+                                        for (DocumentSnapshot docUser :
+                                                value.getDocuments()) {
+                                            friendListAdapter.addOrUpdate(docUser.toObject(User.class));
+                                        }
+                                    } else {
+                                        Log.d(this.toString(), "Current data: null");
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
 
                     if (value.contains(Constants.docUserPathRooms)) {

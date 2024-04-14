@@ -59,6 +59,7 @@ public class SignupActivity extends AppCompatActivity {
                     Toast.makeText(this, getResources().getString(R.string.pleaseFillTheForm), Toast.LENGTH_LONG).show();
                 } else if (!password.equals(confirmPassword)) {
                     Toast.makeText(this, getResources().getString(R.string.incorrectConfirmPassword), Toast.LENGTH_LONG).show();
+                    binding.etPasswordConfirm.requestFocus();
                 } else {
                     User user = new User();
                     user.setFirstName(firstName);
@@ -82,6 +83,7 @@ public class SignupActivity extends AppCompatActivity {
                                                                 SharedPreferencesManager.getInstance().setJwtToken(MainUser.getInstance().getJwtToken());
                                                                 Intent intent = new Intent(SignupActivity.this, MainActivity.class);
                                                                 startActivity(intent);
+                                                                finish();
                                                             } else {
                                                                 Log.e(this.toString(), updateTask.getException().getMessage());
                                                                 Toast.makeText(SignupActivity.this, getResources().getString(R.string.signupFailed), Toast.LENGTH_LONG).show();
@@ -94,6 +96,8 @@ public class SignupActivity extends AppCompatActivity {
                                                         break;
                                                     case ResponseStatus.USERNAME_EXISTED:
                                                         Toast.makeText(SignupActivity.this, getResources().getString(R.string.usernameExisted), Toast.LENGTH_LONG).show();
+                                                        binding.etUsername.requestFocus();
+                                                        break;
                                                 }
                                             }
 
@@ -116,6 +120,7 @@ public class SignupActivity extends AppCompatActivity {
         binding.btnToLogin.setOnClickListener(v -> {
             Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
             startActivity(intent);
+            finish();
         });
     }
 }

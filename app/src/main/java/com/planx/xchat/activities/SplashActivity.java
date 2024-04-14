@@ -34,6 +34,7 @@ public class SplashActivity extends AppCompatActivity {
             Toast.makeText(SplashActivity.this, "Empty user", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
             startActivity(intent);
+            finish();
         }
 
         else {
@@ -46,6 +47,7 @@ public class SplashActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 Intent intent = new Intent(SplashActivity.this, MainActivity.class);
                                 startActivity(intent);
+                                finish();
                             } else {
                                 Toast.makeText(SplashActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
                             }
@@ -54,6 +56,7 @@ public class SplashActivity extends AppCompatActivity {
                         Toast.makeText(SplashActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
                         startActivity(intent);
+                        finish();
                     }
                 }
 
@@ -63,6 +66,7 @@ public class SplashActivity extends AppCompatActivity {
                     Toast.makeText(SplashActivity.this, "Error auto log in", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(SplashActivity.this, MainActivity.class);
                     startActivity(intent);
+                    finish();
                 }
             });
         }

@@ -22,14 +22,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
-import com.planx.xchat.adapters.DateLongIntFormatAdapter;
 import com.planx.xchat.adapters.MessageListAdapter;
-import com.planx.xchat.databinding.ActivityMessageBinding;
+import com.planx.xchat.databinding.ActivityRoomBinding;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.firebase.database.RoomReference;
 import com.planx.xchat.models.Message;
@@ -37,7 +33,6 @@ import com.planx.xchat.sqlite.DatabaseHandler;
 import com.planx.xchat.models.Room;
 import com.planx.xchat.models.User;
 
-import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,7 +43,7 @@ import java.util.Map;
 public class RoomActivity extends AppCompatActivity {
 
     private DatabaseHandler db;
-    private ActivityMessageBinding binding;
+    private ActivityRoomBinding binding;
 
     private ArrayList<Message> messageList;
     private MessageListAdapter messageListAdapter;
@@ -61,7 +56,7 @@ public class RoomActivity extends AppCompatActivity {
 
         messageList = new ArrayList<>();
 
-        binding = ActivityMessageBinding.inflate(getLayoutInflater());
+        binding = ActivityRoomBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         Intent intent = getIntent();
@@ -73,6 +68,9 @@ public class RoomActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         RoomReference roomReference = snapshot.getValue(RoomReference.class);
+
+                        binding.tvTitle.setText(roomReference.getTitle());
+
                         room = roomReference.toSQLiteRoom();
                         room.setId(roomId);
                         room.setLastId(MainUser.getInstance().getId());
@@ -91,6 +89,7 @@ public class RoomActivity extends AppCompatActivity {
                                     }
 
                                     if (room.getParticipants().size() == 1) { // Only main user and their friend (two-person room)
+                                        room.setTitle(room.getParticipants().get(0).getFirstName());
                                         room.setReceiverId(room.getParticipants().get(0).getId());
                                         room.setReceiverName(room.getParticipants().get(0).getFirstName());
                                         room.setReceiverAvatar(room.getParticipants().get(0).getAvatar());
@@ -170,6 +169,8 @@ public class RoomActivity extends AppCompatActivity {
                 }
             });
         });
+
+        binding.ibBack.setOnClickListener(v -> finish());
     }
 
     private void showMessageList() {

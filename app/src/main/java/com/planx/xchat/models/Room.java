@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public class Room implements Serializable {
     private String id;
+    private String title;
     private String lastChat;
     private String lastId;
     private List<User> participants;
@@ -26,12 +27,13 @@ public class Room implements Serializable {
     }
 
     public RoomReference toRoomReference() {
-        return new RoomReference(lastChat, lastId, participants.stream()
+        return new RoomReference(title, lastChat, lastId, participants.stream()
                 .collect(Collectors.toMap(User::getId, obj -> true)), senderId, senderName, senderAvatar, receiverId, receiverName, receiverAvatar, timestamp);
     }
 
-    public Room(String id, String lastChat, String lastId, List<User> participants, String senderId, String senderName, String senderAvatar, String receiverId, String receiverName, String receiverAvatar, Date timestamp) {
+    public Room(String id, String title, String lastChat, String lastId, List<User> participants, String senderId, String senderName, String senderAvatar, String receiverId, String receiverName, String receiverAvatar, Date timestamp) {
         this.id = id;
+        this.title = title;
         this.lastChat = lastChat;
         this.lastId = lastId;
         this.participants = participants;
@@ -50,6 +52,14 @@ public class Room implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getLastChat() {

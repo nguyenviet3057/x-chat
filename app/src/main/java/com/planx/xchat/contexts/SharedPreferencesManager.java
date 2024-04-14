@@ -34,11 +34,11 @@ public class SharedPreferencesManager {
     }
 
     public void setUserData() {
-        editor.putString(USER_ID, MainUser.getInstance().getId()).apply();
-        editor.putString(USER_FIRSTNAME, MainUser.getInstance().getFirstName()).apply();
-        editor.putString(USER_LASTNAME, MainUser.getInstance().getLastName()).apply();
-        editor.putString(USER_FULLNAME, MainUser.getInstance().getFullName()).apply();
-        editor.commit();
+        editor.putString(USER_ID, MainUser.getInstance().getId());
+        editor.putString(USER_FIRSTNAME, MainUser.getInstance().getFirstName());
+        editor.putString(USER_LASTNAME, MainUser.getInstance().getLastName());
+        editor.putString(USER_FULLNAME, MainUser.getInstance().getFullName());
+        editor.apply();
     }
 
     public void getUserData() {
@@ -48,14 +48,23 @@ public class SharedPreferencesManager {
         MainUser.getInstance().setFullName(sharedPreferences.getString(USER_FULLNAME, null));
     }
 
-    public void setJwtToken(String token) {
-        editor.putString(JWT_TOKEN, token).apply();
+    public void clearData() {
+        MainUser.getInstance().setInstance(null);
+
+        editor.clear();
         editor.commit();
+
+        XChat.firestore.clearPersistence();
+    }
+
+    public void setJwtToken(String token) {
+        editor.putString(JWT_TOKEN, token);
+        editor.apply();
     }
 
     public void clearJwtToken() {
-        editor.putString(JWT_TOKEN, null).apply();
-        editor.commit();
+        editor.putString(JWT_TOKEN, null);
+        editor.apply();
     }
 
     public String getJwtToken() {
@@ -67,7 +76,7 @@ public class SharedPreferencesManager {
     }
 
     public void setCookies(Set<String> cookieString) {
-        editor.putStringSet(PREF_COOKIES, cookieString).apply();
+        editor.putStringSet(PREF_COOKIES, cookieString);
         editor.commit();
     }
 

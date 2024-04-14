@@ -1,5 +1,9 @@
 package com.planx.xchat.retrofit;
 
+import com.planx.xchat.retrofit.interceptor.AddCookiesInterceptor;
+import com.planx.xchat.retrofit.interceptor.ReceivedCookiesInterceptor;
+
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -12,8 +16,16 @@ public class RetrofitClient {
     private ApiService apiService;
 
     private RetrofitClient() {
+        OkHttpClient client = new OkHttpClient();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        builder.addInterceptor(new AddCookiesInterceptor());
+        builder.addInterceptor(new ReceivedCookiesInterceptor());
+        client = builder.build();
+
         Retrofit retrofit = new Retrofit.Builder().baseUrl(ApiService.API_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
                 .build();
         apiService = retrofit.create(ApiService.class);
     }

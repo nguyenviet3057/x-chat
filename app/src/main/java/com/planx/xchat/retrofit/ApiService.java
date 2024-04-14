@@ -2,9 +2,11 @@ package com.planx.xchat.retrofit;
 
 import com.planx.xchat.retrofit.request.LoginRequest;
 import com.planx.xchat.retrofit.request.PingRequest;
+import com.planx.xchat.retrofit.request.SearchRequest;
 import com.planx.xchat.retrofit.request.SignupRequest;
 import com.planx.xchat.retrofit.response.LoginResponse;
 import com.planx.xchat.retrofit.response.PingResponse;
+import com.planx.xchat.retrofit.response.SearchResponse;
 import com.planx.xchat.retrofit.response.SignupResponse;
 
 import retrofit2.Call;
@@ -19,6 +21,7 @@ public interface ApiService {
     String API_PING = "ping";
     String API_LOGIN = "login";
     String API_SIGNUP = "signup";
+    String API_SEARCH = "search";
 
     @POST(API_PING)
     Call<PingResponse> ping(@Body PingRequest data);
@@ -28,4 +31,7 @@ public interface ApiService {
 
     @POST(API_SIGNUP)
     Call<SignupResponse> signup(@Body SignupRequest data);
+
+    @POST(API_SEARCH)
+    Call<SearchResponse> search(@Body SearchRequest data);
 }

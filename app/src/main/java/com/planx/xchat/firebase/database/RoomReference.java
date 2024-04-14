@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RoomReference implements Serializable {
+    private  String title;
     private String lastChat;
     private String lastId;
     private Map<String, Boolean> participants;
@@ -25,10 +26,11 @@ public class RoomReference implements Serializable {
     }
 
     public Room toSQLiteRoom() {
-        return new Room(null, lastChat, lastId, new ArrayList<>(), senderId, senderName, senderAvatar, receiverId, receiverName, receiverAvatar, timestamp);
+        return new Room(null, title, lastChat, lastId, new ArrayList<>(), senderId, senderName, senderAvatar, receiverId, receiverName, receiverAvatar, timestamp);
     }
 
-    public RoomReference(String lastChat, String lastId, Map<String, Boolean> participants, String senderId, String senderName, String senderAvatar, String receiverId, String receiverName, String receiverAvatar, Date timestamp) {
+    public RoomReference(String title, String lastChat, String lastId, Map<String, Boolean> participants, String senderId, String senderName, String senderAvatar, String receiverId, String receiverName, String receiverAvatar, Date timestamp) {
+        this.title = title;
         this.lastChat = lastChat;
         this.lastId = lastId;
         this.participants = participants;
@@ -39,6 +41,14 @@ public class RoomReference implements Serializable {
         this.receiverName = receiverName;
         this.receiverAvatar = receiverAvatar;
         this.timestamp = timestamp;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getLastChat() {
