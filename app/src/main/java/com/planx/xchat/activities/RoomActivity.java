@@ -69,8 +69,6 @@ public class RoomActivity extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         RoomReference roomReference = snapshot.getValue(RoomReference.class);
 
-                        binding.tvTitle.setText(roomReference.getTitle());
-
                         room = roomReference.toSQLiteRoom();
                         room.setId(roomId);
                         room.setLastId(MainUser.getInstance().getId());
@@ -93,6 +91,8 @@ public class RoomActivity extends AppCompatActivity {
                                         room.setReceiverId(room.getParticipants().get(0).getId());
                                         room.setReceiverName(room.getParticipants().get(0).getFirstName());
                                         room.setReceiverAvatar(room.getParticipants().get(0).getAvatar());
+
+                                        binding.tvTitle.setText(room.getTitle());
                                     }
                                     room.getParticipants().add(MainUser.getInstance().toSQLiteUser());
                                     showMessageList();
