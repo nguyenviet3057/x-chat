@@ -9,6 +9,7 @@ import com.planx.xchat.retrofit.response.PingResponse;
 import com.planx.xchat.retrofit.response.SearchResponse;
 import com.planx.xchat.retrofit.response.SignupResponse;
 
+import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -33,5 +34,5 @@ public interface ApiService {
     Call<SignupResponse> signup(@Body SignupRequest data);
 
     @POST(API_SEARCH)
-    Call<SearchResponse> search(@Body SearchRequest data);
+    Observable<SearchResponse> search(@Body SearchRequest data);
 }

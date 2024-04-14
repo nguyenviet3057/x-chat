@@ -1,13 +1,20 @@
 package com.planx.xchat.retrofit;
 
+import com.planx.xchat.models.User;
 import com.planx.xchat.retrofit.interceptor.AddCookiesInterceptor;
 import com.planx.xchat.retrofit.interceptor.ReceivedCookiesInterceptor;
+import com.planx.xchat.retrofit.request.SearchRequest;
+import com.planx.xchat.retrofit.response.SearchResponse;
 
+import java.util.List;
+
+import io.reactivex.rxjava3.core.Observable;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
@@ -25,6 +32,7 @@ public class RetrofitClient {
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(ApiService.API_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .client(client)
                 .build();
         apiService = retrofit.create(ApiService.class);
@@ -57,5 +65,9 @@ public class RetrofitClient {
                 callback.onFailure(t);
             }
         });
+    }
+
+    public Observable<SearchResponse> search(String query) {
+        return apiService.search(new SearchRequest(query));
     }
 }

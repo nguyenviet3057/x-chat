@@ -39,6 +39,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -46,6 +53,7 @@ public class SearchActivity extends AppCompatActivity {
     private ArrayList<User> friendList;
     private SearchResultListAdapter searchResultListAdapter;
     private ICallback<String> callbackToRoom;
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,42 +107,79 @@ public class SearchActivity extends AppCompatActivity {
             });
         }
 
-        binding.etSearch.requestFocus();
+
+
+        PublishSubject<String> searchSubject = PublishSubject.create();
+        Observable<SearchResponse> searchObservable = searchSubject
+                .debounce(300, TimeUnit.MILLISECONDS)
+                .filter(text -> !text.isEmpty())
+                .distinctUntilChanged()
+                .switchMap(query -> RetrofitClient.getInstance().getApiService().search(new SearchRequest(query))
+                        .subscribeOn(Schedulers.io()))
+                .observeOn(AndroidSchedulers.mainThread());
+
+        disposable.add(searchObservable.subscribe(this::handleResults, this::handleError));
         binding.etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                searchSubject.onNext(s.toString());
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                String strSearch = binding.etSearch.getText().toString();
-                if (!strSearch.trim().equals("")) {
-                    RetrofitClient.getInstance().sendRequest(RetrofitClient.getInstance().getApiService().search(new SearchRequest(strSearch)), new ApiResponseCallback<SearchResponse>() {
-                        @Override
-                        public void onSuccess(SearchResponse response) {
-                            if (response.getStatus() == ResponseStatus.OK) {
-                                searchResultListAdapter.updateFriendList(response.getData());
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            Log.e(this.toString(), throwable.getMessage());
-                        }
-                    });
-                } else {
-                    searchResultListAdapter.updateFriendList(friendList);
-                }
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
+        binding.etSearch.requestFocus();
+//        binding.etSearch.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//                String strSearch = binding.etSearch.getText().toString();
+//                if (!strSearch.trim().equals("")) {
+//                    RetrofitClient.getInstance().sendRequest(RetrofitClient.getInstance().getApiService().search(new SearchRequest(strSearch)), new ApiResponseCallback<SearchResponse>() {
+//                        @Override
+//                        public void onSuccess(SearchResponse response) {
+//                            if (response.getStatus() == ResponseStatus.OK) {
+//                                searchResultListAdapter.updateFriendList(response.getData());
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Throwable throwable) {
+//                            Log.e(this.toString(), throwable.getMessage());
+//                        }
+//                    });
+//                } else {
+//                    searchResultListAdapter.updateFriendList(friendList);
+//                }
+//            }
+//        });
+
         binding.ibBack.setOnClickListener(v -> finish());
+    }
+
+    private void handleError(Throwable throwable) {
+        Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_LONG).show();
+        Log.e(this.toString(), throwable.getMessage());
+    }
+
+    private void handleResults(SearchResponse searchResponse) {
+        if (searchResponse.getStatus() == ResponseStatus.OK) {
+            searchResultListAdapter.updateFriendList(searchResponse.getData());
+            Log.d("API data", Integer.toString(searchResponse.getData().size()));
+        }
     }
 
     private void retrieveRoomByFriend(User friend) {
@@ -206,5 +251,12 @@ public class SearchActivity extends AppCompatActivity {
                 Toast.makeText(SearchActivity.this, getResources().getString(R.string.failedMakeRoom), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Dispose all disposables to avoid memory leaks
+        disposable.clear();
     }
 }
