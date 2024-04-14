@@ -16,7 +16,8 @@ import com.planx.xchat.retrofit.ApiResponseCallback;
 import com.planx.xchat.retrofit.RetrofitClient;
 import com.planx.xchat.retrofit.request.PingRequest;
 import com.planx.xchat.retrofit.response.PingResponse;
-import com.planx.xchat.retrofit.response.ResponseStatus;
+import com.planx.xchat.retrofit.status.PingResponseStatus;
+import com.planx.xchat.retrofit.status.ResponseStatus;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
@@ -41,7 +42,7 @@ public class SplashActivity extends AppCompatActivity {
             RetrofitClient.getInstance().sendRequest(RetrofitClient.getInstance().getApiService().ping(new PingRequest(SharedPreferencesManager.getInstance().getJwtToken())), new ApiResponseCallback<PingResponse>() {
                 @Override
                 public void onSuccess(PingResponse response) {
-                    if (response.getStatus() == ResponseStatus.OK) {
+                    if (response.getStatus() == PingResponseStatus.OK) {
                         MainUser.getInstance().setInstance(response.getData());
                         XChat.firestore.collection(XChat.colUsers).document(MainUser.getInstance().getId()).get().addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {

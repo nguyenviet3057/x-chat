@@ -12,7 +12,7 @@ import android.widget.Toast;
 import com.google.firebase.firestore.CollectionReference;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
-import com.planx.xchat.retrofit.response.ResponseStatus;
+import com.planx.xchat.retrofit.status.ResponseStatus;
 import com.planx.xchat.contexts.SharedPreferencesManager;
 import com.planx.xchat.databinding.ActivitySignupBinding;
 import com.planx.xchat.models.MainUser;
@@ -21,6 +21,7 @@ import com.planx.xchat.retrofit.response.SignupResponse;
 import com.planx.xchat.retrofit.RetrofitClient;
 import com.planx.xchat.retrofit.request.SignupRequest;
 import com.planx.xchat.models.User;
+import com.planx.xchat.retrofit.status.SignupResponseStatus;
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -74,7 +75,7 @@ public class SignupActivity extends AppCompatActivity {
                                             @Override
                                             public void onSuccess(SignupResponse response) {
                                                 switch (response.getStatus()) {
-                                                    case ResponseStatus.OK:
+                                                    case SignupResponseStatus.OK:
                                                         MainUser.getInstance().setInstance(response.getData());
 
                                                         colUsers.document(id).update(MainUser.getInstance().toMap()).addOnCompleteListener(updateTask -> {
@@ -90,11 +91,11 @@ public class SignupActivity extends AppCompatActivity {
                                                             }
                                                         });
                                                         break;
-                                                    case ResponseStatus.ERROR:
+                                                    case SignupResponseStatus.ERROR:
                                                         Log.e(this.toString(), response.getMessage());
                                                         Toast.makeText(SignupActivity.this, getResources().getString(R.string.signupFailed), Toast.LENGTH_LONG).show();
                                                         break;
-                                                    case ResponseStatus.USERNAME_EXISTED:
+                                                    case SignupResponseStatus.USERNAME_EXISTED:
                                                         Toast.makeText(SignupActivity.this, getResources().getString(R.string.usernameExisted), Toast.LENGTH_LONG).show();
                                                         binding.etUsername.requestFocus();
                                                         break;

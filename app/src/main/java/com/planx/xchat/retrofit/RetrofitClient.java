@@ -66,8 +66,4 @@ public class RetrofitClient {
             }
         });
     }
-
-    public Observable<SearchResponse> search(String query) {
-        return apiService.search(new SearchRequest(query));
-    }
 }

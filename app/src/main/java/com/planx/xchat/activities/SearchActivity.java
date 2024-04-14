@@ -17,7 +17,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
 import com.planx.xchat.adapters.SearchResultListAdapter;
@@ -28,18 +27,17 @@ import com.planx.xchat.interfaces.ICallback;
 import com.planx.xchat.interfaces.IOnItemClickListener;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.models.User;
-import com.planx.xchat.retrofit.ApiResponseCallback;
 import com.planx.xchat.retrofit.RetrofitClient;
 import com.planx.xchat.retrofit.request.SearchRequest;
-import com.planx.xchat.retrofit.response.ResponseStatus;
 import com.planx.xchat.retrofit.response.SearchResponse;
+import com.planx.xchat.retrofit.status.SearchResponseStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
@@ -51,9 +49,10 @@ public class SearchActivity extends AppCompatActivity {
 
     private ActivitySearchBinding binding;
     private ArrayList<User> friendList;
+    private ArrayList<User> searchResultList;
     private SearchResultListAdapter searchResultListAdapter;
     private ICallback<String> callbackToRoom;
-    private CompositeDisposable disposable = new CompositeDisposable();
+    private CompositeDisposable disposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,14 +73,16 @@ public class SearchActivity extends AppCompatActivity {
         };
 
         friendList = new ArrayList<>();
+        disposable = new CompositeDisposable();
+        searchResultList = new ArrayList<>();
 
         binding = ActivitySearchBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        searchResultListAdapter = new SearchResultListAdapter(this, friendList, new IOnItemClickListener() {
+        searchResultListAdapter = new SearchResultListAdapter(this, searchResultList, new IOnItemClickListener() {
             @Override
             public void onItemClick(int position) {
-                retrieveRoomByFriend(friendList.get(position));
+                retrieveRoomByFriend(searchResultList.get(position));
             }
 
             @Override
@@ -99,23 +100,27 @@ public class SearchActivity extends AppCompatActivity {
                             task.getResult().getDocuments()) {
                         friendList.add(docUser.toObject(User.class));
                     }
-                    if (binding.etSearch.getText().toString().trim().equals(""))
-                        searchResultListAdapter.updateFriendList(friendList);
                 } else {
                     Toast.makeText(this, "Can not find your friends", Toast.LENGTH_LONG).show();
                 }
             });
         }
 
-
-
         PublishSubject<String> searchSubject = PublishSubject.create();
         Observable<SearchResponse> searchObservable = searchSubject
                 .debounce(300, TimeUnit.MILLISECONDS)
-                .filter(text -> !text.isEmpty())
+                .startWith(Observable.just(""))
                 .distinctUntilChanged()
-                .switchMap(query -> RetrofitClient.getInstance().getApiService().search(new SearchRequest(query))
-                        .subscribeOn(Schedulers.io()))
+                .switchMap(query -> {
+                    if (query.isEmpty()) {
+                        // Emit an empty SearchResults object or similar when the query is empty
+                        return Observable.just(new SearchResponse(SearchResponseStatus.EMPTY_QUERY, "Empty", new ArrayList<>()));
+                    } else {
+                        // Make network request for non-empty query
+                        return RetrofitClient.getInstance().getApiService().search(new SearchRequest(query))
+                                .subscribeOn(Schedulers.io());
+                    }
+                })
                 .observeOn(AndroidSchedulers.mainThread());
 
         disposable.add(searchObservable.subscribe(this::handleResults, this::handleError));
@@ -133,40 +138,6 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         binding.etSearch.requestFocus();
-//        binding.etSearch.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//                String strSearch = binding.etSearch.getText().toString();
-//                if (!strSearch.trim().equals("")) {
-//                    RetrofitClient.getInstance().sendRequest(RetrofitClient.getInstance().getApiService().search(new SearchRequest(strSearch)), new ApiResponseCallback<SearchResponse>() {
-//                        @Override
-//                        public void onSuccess(SearchResponse response) {
-//                            if (response.getStatus() == ResponseStatus.OK) {
-//                                searchResultListAdapter.updateFriendList(response.getData());
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onFailure(Throwable throwable) {
-//                            Log.e(this.toString(), throwable.getMessage());
-//                        }
-//                    });
-//                } else {
-//                    searchResultListAdapter.updateFriendList(friendList);
-//                }
-//            }
-//        });
-
         binding.ibBack.setOnClickListener(v -> finish());
     }
 
@@ -176,9 +147,17 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void handleResults(SearchResponse searchResponse) {
-        if (searchResponse.getStatus() == ResponseStatus.OK) {
-            searchResultListAdapter.updateFriendList(searchResponse.getData());
-            Log.d("API data", Integer.toString(searchResponse.getData().size()));
+        switch (searchResponse.getStatus()) {
+            case SearchResponseStatus.OK:
+                searchResultList = searchResponse.getData();
+                searchResultListAdapter.updateFriendList(searchResultList);
+                Log.d("API data", searchResponse.getMessage().concat(": " + Integer.toString(searchResponse.getData().size())));
+                break;
+            case SearchResponseStatus.EMPTY_QUERY:
+                searchResultList = friendList;
+                searchResultListAdapter.updateFriendList(friendList);
+                Log.d("Not call API", searchResponse.getMessage().concat(": " + Integer.toString(searchResponse.getData().size())));
+                break;
         }
     }
 
@@ -232,7 +211,12 @@ public class SearchActivity extends AppCompatActivity {
                                 updateTask.getResult().getDocuments()) {
                             User user = docUserData.toObject(User.class);
                             user.getRooms().add(roomKey);
+                            user.getFriends().addAll(participants.entrySet().stream()
+                                    .filter(entry -> !entry.getKey().equals(user.getId()) && entry.getValue())
+                                    .map(Map.Entry::getKey)
+                                    .collect(Collectors.toList()));
                             XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.docUserPathRooms), user.getRooms());
+                            XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.docUserPathFriends), user.getFriends());
                         }
                     }
                 });

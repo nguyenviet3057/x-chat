@@ -11,7 +11,8 @@ import android.widget.Toast;
 
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
-import com.planx.xchat.retrofit.response.ResponseStatus;
+import com.planx.xchat.retrofit.status.LoginResponseStatus;
+import com.planx.xchat.retrofit.status.ResponseStatus;
 import com.planx.xchat.contexts.SharedPreferencesManager;
 import com.planx.xchat.databinding.ActivityLoginBinding;
 import com.planx.xchat.models.MainUser;
@@ -41,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(LoginResponse response) {
                     switch (response.getStatus()) {
-                        case ResponseStatus.OK:
+                        case LoginResponseStatus.OK:
                             MainUser.getInstance().setInstance(response.getData());
                             SharedPreferencesManager.getInstance().setUserData();
                             SharedPreferencesManager.getInstance().setJwtToken(MainUser.getInstance().getJwtToken());
@@ -60,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             });
                             break;
-                        case ResponseStatus.ERROR:
+                        case LoginResponseStatus.ERROR:
                             Toast.makeText(LoginActivity.this, getResources().getString(R.string.accountNotFound), Toast.LENGTH_LONG).show();
                     }
                 }
@@ -71,12 +72,6 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, getResources().getString(R.string.loginFailed), Toast.LENGTH_LONG).show();
                 }
             });
-
-            // Local test
-//            if (username.equals("admin") && password.equals("123456")) {
-//                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-//                startActivity(intent);
-//            }
         });
 
         binding.clMainLayout.setOnClickListener(v -> {
