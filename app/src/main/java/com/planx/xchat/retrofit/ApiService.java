@@ -16,9 +16,9 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface ApiService {
-    String API_BASE_URL = "http://192.168.1.24:8000/api/";
+//    String API_BASE_URL = "http://192.168.1.24:8000/api/";
 //    String API_BASE_URL = "http://10.0.2.2:8000/api/";
-//    String API_BASE_URL = "https://planx-dev000.000webhostapp.com/api/";
+    String API_BASE_URL = "https://planx-dev000.000webhostapp.com/api/";
     String API_PING = "ping";
     String API_LOGIN = "login";
     String API_SIGNUP = "signup";

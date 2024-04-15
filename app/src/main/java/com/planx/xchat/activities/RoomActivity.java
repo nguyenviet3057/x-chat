@@ -148,26 +148,28 @@ public class RoomActivity extends AppCompatActivity {
 
         // Send message
         binding.btnSend.setOnClickListener(v -> {
-            String messageText = binding.etMessage.getText().toString();
+            if (!binding.etMessage.getText().toString().trim().isEmpty()) {
+                String messageText = binding.etMessage.getText().toString();
 
-            DatabaseReference messageRef = XChat.database.getReference().child(XChat.refMessages).child(room.getId());
-            String messageKey = messageRef.push().getKey();
-            Message message = new Message(messageKey, messageText, new ArrayList<>(), MainUser.getInstance().getId(), MainUser.getInstance().getFirstName(), MainUser.getInstance().getAvatar(), room.getReceiverId(), room.getReceiverName(), room.getReceiverAvatar(), Date.from(Instant.now()));
-            messageRef.child(messageKey).setValue(message).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    room.setLastChat(messageText);
-                    room.setTimestamp(Date.from(Instant.now()));
-                    Map<String, Object> updateRoom = new HashMap<>();
-                    updateRoom.put(room.getId(), room.toRoomReference());
-                    XChat.database.getReference().child(XChat.refRooms).updateChildren(updateRoom);
+                DatabaseReference messageRef = XChat.database.getReference().child(XChat.refMessages).child(room.getId());
+                String messageKey = messageRef.push().getKey();
+                Message message = new Message(messageKey, messageText, new ArrayList<>(), MainUser.getInstance().getId(), MainUser.getInstance().getFirstName(), MainUser.getInstance().getAvatar(), room.getReceiverId(), room.getReceiverName(), room.getReceiverAvatar(), Date.from(Instant.now()));
+                messageRef.child(messageKey).setValue(message).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        room.setLastChat(messageText);
+                        room.setTimestamp(Date.from(Instant.now()));
+                        Map<String, Object> updateRoom = new HashMap<>();
+                        updateRoom.put(room.getId(), room.toRoomReference());
+                        XChat.database.getReference().child(XChat.refRooms).updateChildren(updateRoom);
 
-                    binding.etMessage.setText("");
-                    binding.rvMessageList.scrollToPosition(0);
-                } else {
-                    Log.e(this.toString(), task.getException().getMessage());
-                    Toast.makeText(RoomActivity.this, getResources().getString(R.string.failedAddMessage), Toast.LENGTH_LONG).show();
-                }
-            });
+                        binding.etMessage.setText("");
+                        binding.rvMessageList.scrollToPosition(0);
+                    } else {
+                        Log.e(this.toString(), task.getException().getMessage());
+                        Toast.makeText(RoomActivity.this, getResources().getString(R.string.failedAddMessage), Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
         });
 
         binding.ibBack.setOnClickListener(v -> finish());
