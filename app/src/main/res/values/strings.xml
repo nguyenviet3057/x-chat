@@ -39,6 +39,7 @@
     <string name="failedMakeRoom">Can not make a new room for you all</string>
     <string name="failedAddMessage">Can not send your message</string>
     <string name="roomNotFound">Room not found</string>
+    <string name="loadMoreMessage">Loading more...</string>
 
     <!--    Common -->
     <string name="et_placeholder">Aa..</string>

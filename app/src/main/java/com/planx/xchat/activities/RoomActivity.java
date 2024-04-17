@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import android.content.Context;
@@ -25,6 +26,7 @@ import com.google.firebase.firestore.FieldPath;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
 import com.planx.xchat.adapters.MessageListAdapter;
+import com.planx.xchat.constants.Constants;
 import com.planx.xchat.databinding.ActivityRoomBinding;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.firebase.database.RoomReference;
@@ -32,13 +34,16 @@ import com.planx.xchat.models.Message;
 import com.planx.xchat.sqlite.DatabaseHandler;
 import com.planx.xchat.models.Room;
 import com.planx.xchat.models.User;
+import com.planx.xchat.utils.Utils;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public class RoomActivity extends AppCompatActivity {
 
@@ -49,6 +54,8 @@ public class RoomActivity extends AppCompatActivity {
     private MessageListAdapter messageListAdapter;
     private String roomId;
     private Room room;
+    private boolean isAtBottom = true;
+    private boolean isAllowLoadMore = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,8 +128,8 @@ public class RoomActivity extends AppCompatActivity {
             }
         });
         binding.llMessageHistoryContainer.setOnLongClickListener(v -> {
-//            Toast.makeText(this, messageList.get(binding.llMessageHistoryContainer.getPosition()).getChat(), Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, Integer.toString(binding.llMessageHistoryContainer.getPosition()), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, messageList.get(binding.llMessageHistoryContainer.getPosition()).getChat(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, Integer.toString(binding.rvMessageList.getChildAt(binding.llMessageHistoryContainer.getPosition()).getPaddingBottom()), Toast.LENGTH_SHORT).show();
             return true;
         });
 
@@ -163,7 +170,7 @@ public class RoomActivity extends AppCompatActivity {
                         XChat.database.getReference().child(XChat.refRooms).updateChildren(updateRoom);
 
                         binding.etMessage.setText("");
-                        binding.rvMessageList.scrollToPosition(0);
+                        binding.rvMessageList.scrollToPosition(messageList.size() - 1);
                     } else {
                         Log.e(this.toString(), task.getException().getMessage());
                         Toast.makeText(RoomActivity.this, getResources().getString(R.string.failedAddMessage), Toast.LENGTH_LONG).show();
@@ -173,6 +180,30 @@ public class RoomActivity extends AppCompatActivity {
         });
 
         binding.ibBack.setOnClickListener(v -> finish());
+
+        binding.rvMessageList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int totalHeight = recyclerView.computeVerticalScrollRange();
+                int scrolledY = recyclerView.computeVerticalScrollOffset();
+                int distanceFromBottom = totalHeight - scrolledY - recyclerView.getHeight();
+
+                if (distanceFromBottom > Utils.dp2px(50)) {
+                    isAtBottom = false;
+                } else {
+                    isAtBottom = true;
+                }
+
+                if (scrolledY < Utils.dp2px(50) && isAllowLoadMore && messageList.size() >= XChat.messageListLimit) {
+                    isAllowLoadMore = false;
+                     if (messageList.get(0).getId() == null) {
+                        loadMoreMessage();
+                    }
+                }
+            }
+        });
     }
 
     private void showMessageList() {
@@ -180,33 +211,54 @@ public class RoomActivity extends AppCompatActivity {
         binding.rvMessageList.setAdapter(messageListAdapter);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setReverseLayout(true);
+//        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
 
         binding.rvMessageList.setLayoutManager(layoutManager);
         if ((binding.rvMessageList.getItemAnimator()) != null) {
             ((SimpleItemAnimator) binding.rvMessageList.getItemAnimator()).setSupportsChangeAnimations(false);
         }
-        XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(XChat.messageListLimit).addChildEventListener(new ChildEventListener() {
+
+        XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(XChat.messageListLimit).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    messageListAdapter.addItem(snapshot.getValue(Message.class));
+                    if (snapshot.getChildrenCount() == XChat.messageListLimit) {
+                        messageListAdapter.addLoadingMoreSection();
+                    }
+
+                    XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(XChat.messageListLimit).addChildEventListener(new ChildEventListener() {
+                        @Override
+                        public void onChildAdded(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+                            messageList.add(messageSnapshot.getValue(Message.class));
+                            messageListAdapter.notifyItemChanged(messageList.size() - 2);
+                            messageListAdapter.notifyItemInserted(messageList.size() - 1);
+
+                            if (isAtBottom)
+                                binding.rvMessageList.scrollToPosition(messageList.size() - 1);
+                        }
+
+                        @Override
+                        public void onChildChanged(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+                            Toast.makeText(RoomActivity.this, "Latest: " + messageSnapshot.getValue(Message.class).getChat(), Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onChildRemoved(@NonNull DataSnapshot messageSnapshot) {
+
+                        }
+
+                        @Override
+                        public void onChildMoved(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
                 }
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
             }
 
             @Override
@@ -214,5 +266,82 @@ public class RoomActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void loadMoreMessage() {
+        ArrayList<Message> moreMessageList = new ArrayList<>();
+        Message currentOldestMessage = messageList.get(1);
+
+        XChat.database.getReference()
+                .child(XChat.refMessages)
+                .child(room.getId())
+                .orderByChild(Constants.refMessagePathTimestamp)
+                .endBefore(currentOldestMessage.getTimestamp().getTime())
+                .limitToLast(XChat.messageListLimit)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        if (snapshot.exists() && snapshot.getChildrenCount() > 0) {
+                            for (DataSnapshot messageData :
+                                    snapshot.getChildren()) {
+                                moreMessageList.add(messageData.getValue(Message.class));
+                            }
+
+                            if (moreMessageList.size() > 0) { // Still catch onDataChange but snapshot.getChildrenCount() equals 0
+//                              Collections.reverse(moreMessageList);
+                                messageList.addAll(1, moreMessageList);
+                                messageListAdapter.notifyItemRangeInserted(1, moreMessageList.size());
+
+                                isAllowLoadMore = true;
+
+                                if (moreMessageList.size() < XChat.messageListLimit) {
+                                    messageListAdapter.removeLoadingMoreSection();
+                                }
+                            } else {
+                                messageListAdapter.removeLoadingMoreSection();
+                            }
+
+                            XChat.database.getReference()
+                                    .child(XChat.refMessages)
+                                    .child(room.getId())
+                                    .orderByChild(Constants.refMessagePathTimestamp)
+                                    .endBefore(currentOldestMessage.getTimestamp().getTime())
+                                    .limitToLast(XChat.messageListLimit)
+                                    .addChildEventListener(new ChildEventListener() {
+                                        @Override
+                                        public void onChildAdded(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+                                        }
+
+                                        @Override
+                                        public void onChildChanged(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+                                            Toast.makeText(RoomActivity.this, "Old: " + messageSnapshot.getValue(Message.class).getChat(), Toast.LENGTH_LONG).show();
+                                        }
+
+                                        @Override
+                                        public void onChildRemoved(@NonNull DataSnapshot messageSnapshot) {
+
+                                        }
+
+                                        @Override
+                                        public void onChildMoved(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                        }
+                                    });
+                        } else {
+                            messageListAdapter.removeLoadingMoreSection();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
     }
 }

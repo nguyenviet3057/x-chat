@@ -5,5 +5,5 @@ public class Constants {
     public static String docUserPathRooms = "rooms";
     public static String docUserPathFirstName = "firstName";
     public static String docUserPathLastName = "lastName";
-
+    public static String refMessagePathTimestamp = "timestamp/time";
 }
