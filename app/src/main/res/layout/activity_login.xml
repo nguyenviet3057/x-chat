@@ -48,7 +48,7 @@
             android:layout_height="72dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/logo" />
+            app:srcCompat="@drawable/logo_round" />
 
         <Button
             android:id="@+id/btnLogin"

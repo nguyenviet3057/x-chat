@@ -56,6 +56,7 @@ public class RoomActivity extends AppCompatActivity {
     private Room room;
     private boolean isAtBottom = true;
     private boolean isAllowLoadMore = true;
+    private int messageListLimit = 30;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,7 +180,7 @@ public class RoomActivity extends AppCompatActivity {
             }
         });
 
-        binding.ibBack.setOnClickListener(v -> finish());
+        binding.ibBack.setOnClickListener(v -> onBackPressed());
 
         binding.rvMessageList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -196,7 +197,7 @@ public class RoomActivity extends AppCompatActivity {
                     isAtBottom = true;
                 }
 
-                if (scrolledY < Utils.dp2px(50) && isAllowLoadMore && messageList.size() >= XChat.messageListLimit) {
+                if (scrolledY < Utils.dp2px(50) && isAllowLoadMore && messageList.size() >= messageListLimit) {
                     isAllowLoadMore = false;
                      if (messageList.get(0).getId() == null) {
                         loadMoreMessage();
@@ -219,15 +220,15 @@ public class RoomActivity extends AppCompatActivity {
             ((SimpleItemAnimator) binding.rvMessageList.getItemAnimator()).setSupportsChangeAnimations(false);
         }
 
-        XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(XChat.messageListLimit).addListenerForSingleValueEvent(new ValueEventListener() {
+        XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(messageListLimit).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    if (snapshot.getChildrenCount() == XChat.messageListLimit) {
+                    if (snapshot.getChildrenCount() == messageListLimit) {
                         messageListAdapter.addLoadingMoreSection();
                     }
 
-                    XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(XChat.messageListLimit).addChildEventListener(new ChildEventListener() {
+                    XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(messageListLimit).addChildEventListener(new ChildEventListener() {
                         @Override
                         public void onChildAdded(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
                             messageList.add(messageSnapshot.getValue(Message.class));
@@ -258,6 +259,8 @@ public class RoomActivity extends AppCompatActivity {
 
                         }
                     });
+
+                    messageListLimit = 10;
                 }
             }
 
@@ -277,7 +280,7 @@ public class RoomActivity extends AppCompatActivity {
                 .child(room.getId())
                 .orderByChild(Constants.refMessagePathTimestamp)
                 .endBefore(currentOldestMessage.getTimestamp().getTime())
-                .limitToLast(XChat.messageListLimit)
+                .limitToLast(messageListLimit)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -295,7 +298,7 @@ public class RoomActivity extends AppCompatActivity {
 
                                 isAllowLoadMore = true;
 
-                                if (moreMessageList.size() < XChat.messageListLimit) {
+                                if (moreMessageList.size() < messageListLimit) {
                                     messageListAdapter.removeLoadingMoreSection();
                                 }
                             } else {
@@ -307,7 +310,7 @@ public class RoomActivity extends AppCompatActivity {
                                     .child(room.getId())
                                     .orderByChild(Constants.refMessagePathTimestamp)
                                     .endBefore(currentOldestMessage.getTimestamp().getTime())
-                                    .limitToLast(XChat.messageListLimit)
+                                    .limitToLast(messageListLimit)
                                     .addChildEventListener(new ChildEventListener() {
                                         @Override
                                         public void onChildAdded(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {

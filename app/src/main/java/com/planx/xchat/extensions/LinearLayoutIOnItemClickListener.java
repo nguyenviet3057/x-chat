@@ -31,6 +31,7 @@ public class LinearLayoutIOnItemClickListener extends LinearLayout implements IO
 
     @Override
     public void onItemClick(int position) {
+        this.position = position;
         this.performClick();
     }
 

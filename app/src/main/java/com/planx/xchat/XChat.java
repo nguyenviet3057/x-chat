@@ -25,8 +25,6 @@ public class XChat extends Application {
     public static String refRooms = "rooms";
     public static String refMessages = "messages";
 
-    public static int messageListLimit = 10;
-
     @Override
     public void onCreate() {
         super.onCreate();

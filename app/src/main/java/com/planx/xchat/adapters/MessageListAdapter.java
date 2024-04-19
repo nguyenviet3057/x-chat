@@ -69,7 +69,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             if (message.getId() == null) {
 
             } else {
-                holder.tvChat.setText(message.getTimestamp().toString() + ": " + message.getChat());
+                holder.tvChat.setText(message.getChat());
                 if (messageList.get(position + 1).getSenderId().equals(message.getSenderId())
                         && !message.getSenderId().equals(MainUser.getInstance().getId())) {
                     holder.ivAvatar.setVisibility(View.INVISIBLE);
@@ -81,9 +81,14 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 }
             }
         } else {
-            holder.tvChat.setText(message.getTimestamp().toString() + ": " + message.getChat());
+            holder.tvChat.setText(message.getChat());
 
-            if (position == 1) {
+            if (position == messageList.size() - 1) {
+                if (!message.getSenderId().equals(MainUser.getInstance().getId())) {
+                    Glide.with(context).load(message.getSenderAvatar()).into(holder.ivAvatar);
+                    holder.ivAvatar.setVisibility(View.VISIBLE);
+                }
+            } else if (position == 1) {
                 if (messageList.get(position + 1).getSenderId().equals(message.getSenderId())) {
                     if (!message.getSenderId().equals(MainUser.getInstance().getId())) {
                         holder.ivAvatar.setVisibility(View.INVISIBLE);
@@ -94,11 +99,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                         Glide.with(context).load(message.getSenderAvatar()).into(holder.ivAvatar);
                         holder.ivAvatar.setVisibility(View.VISIBLE);
                     }
-                }
-            } else if (position == messageList.size() - 1) {
-                if (!message.getSenderId().equals(MainUser.getInstance().getId())) {
-                    Glide.with(context).load(message.getSenderAvatar()).into(holder.ivAvatar);
-                    holder.ivAvatar.setVisibility(View.VISIBLE);
                 }
             } else {
                 if (!messageList.get(position - 1).getSenderId().equals(message.getSenderId())
