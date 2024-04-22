@@ -4,8 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,11 +11,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
+import com.planx.xchat.constants.Constants;
+import com.planx.xchat.databinding.FriendRowItemBinding;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.interfaces.IOnItemClickListener;
 import com.planx.xchat.models.User;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.FriendListViewHolder> {
 
@@ -34,19 +35,29 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
     @NonNull
     @Override
     public FriendListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.friend_row_item, parent, false);
-        return new FriendListAdapter.FriendListViewHolder(view);
+        FriendRowItemBinding binding = FriendRowItemBinding.inflate(LayoutInflater.from(parent.getContext()));
+        return new FriendListAdapter.FriendListViewHolder(binding);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull FriendListViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+        } else {
+            holder.binding.tvOnlineStatus.setVisibility(friendList.get(position).isOnline() ? View.VISIBLE : View.INVISIBLE);
+        }
     }
 
     @Override
     public void onBindViewHolder(@NonNull FriendListViewHolder holder, int position) {
         User friend = friendList.get(position);
-        Glide.with(context).load(friend.getAvatar()).into(holder.ivFriendAvatar);
+        Glide.with(context).load(friend.getAvatar()).into(holder.binding.ivFriendAvatar);
+        holder.binding.tvOnlineStatus.setVisibility(friend.isOnline() ? View.VISIBLE : View.INVISIBLE);
 
-        if (friend.getId() == MainUser.getInstance().getId())
-            holder.tvFriendName.setText(XChat.resources.getString(R.string.sender_main_user_alias));
+        if (friend.getId().equals(MainUser.getInstance().getId()))
+            holder.binding.tvFriendName.setText(XChat.resources.getString(R.string.sender_main_user_alias));
         else
-            holder.tvFriendName.setText(friend.getFirstName());
+            holder.binding.tvFriendName.setText(friend.getFirstName());
     }
 
     @Override
@@ -61,7 +72,7 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
         for (int i = 0; i < friendList.size(); i++) {
             if (friendList.get(i).getId().equals(friend.getId())) {
                 friendList.set(i, friend);
-                notifyItemChanged(i, 1);
+                notifyItemChanged(i, Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW);
                 return;
             }
         }
@@ -71,19 +82,16 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Fr
     }
 
     class FriendListViewHolder extends RecyclerView.ViewHolder {
+        private final FriendRowItemBinding binding;
 
-        private ImageView ivFriendAvatar;
-        private TextView tvFriendName;
+        public FriendListViewHolder(@NonNull FriendRowItemBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
 
-        public FriendListViewHolder(@NonNull View itemView) {
-            super(itemView);
-            ivFriendAvatar = itemView.findViewById(R.id.ivFriendAvatar);
-            tvFriendName = itemView.findViewById(R.id.tvFriendName);
-
-            itemView.setOnClickListener(v -> {
+            binding.getRoot().setOnClickListener(v -> {
                 itemClickListener.onItemClick(getAdapterPosition());
             });
-            itemView.setOnLongClickListener(v -> {
+            binding.getRoot().setOnLongClickListener(v -> {
                 itemClickListener.onItemLongClick(getAdapterPosition());
                 return true;
             });

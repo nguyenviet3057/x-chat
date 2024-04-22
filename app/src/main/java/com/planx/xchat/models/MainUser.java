@@ -11,6 +11,7 @@ public class MainUser {
     private String lastName;
     private String fullName;
     private String avatar;
+    private boolean isOnline;
     private List<String> friends;
     private List<String> rooms;
     private String jwtToken;
@@ -29,6 +30,7 @@ public class MainUser {
         result.put("lastName", lastName);
         result.put("fullName", fullName);
         result.put("avatar", avatar);
+        result.put("isOnline", isOnline);
         result.put("friends", friends);
         result.put("rooms", rooms);
 
@@ -86,6 +88,14 @@ public class MainUser {
         this.avatar = avatar;
     }
 
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
+
     public List<String> getFriends() {
         return friends;
     }
@@ -111,6 +121,6 @@ public class MainUser {
     }
 
     public User toSQLiteUser() {
-        return new User(id, firstName, lastName, fullName, avatar);
+        return new User(id, firstName, lastName, fullName, avatar, isOnline);
     }
 }

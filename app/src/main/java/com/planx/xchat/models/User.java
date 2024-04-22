@@ -10,6 +10,7 @@ public class User implements Serializable {
     private String lastName;
     private String fullName;
     private String avatar;
+    private boolean isOnline;
     private List<String> friends;
     private List<String> rooms;
 
@@ -18,14 +19,15 @@ public class User implements Serializable {
         rooms = new ArrayList<>();
     }
 
-    public User(String id, String firstName, String lastName, String fullName, String avatar) {
+    public User(String id, String firstName, String lastName, String fullName, String avatar, boolean isOnline) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.fullName = fullName;
         this.avatar = avatar;
-        friends = new ArrayList<>();
-        rooms = new ArrayList<>();
+        this.isOnline = isOnline;
+        this.friends = new ArrayList<>();
+        this.rooms = new ArrayList<>();
     }
 
     public String getId() {
@@ -66,6 +68,14 @@ public class User implements Serializable {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
     }
 
     public List<String> getFriends() {

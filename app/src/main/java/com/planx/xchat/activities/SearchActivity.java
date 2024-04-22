@@ -215,8 +215,8 @@ public class SearchActivity extends AppCompatActivity {
                                     .filter(entry -> !entry.getKey().equals(user.getId()) && entry.getValue())
                                     .map(Map.Entry::getKey)
                                     .collect(Collectors.toList()));
-                            XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.docUserPathRooms), user.getRooms());
-                            XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.docUserPathFriends), user.getFriends());
+                            XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.DOC_USER_PATH_ROOMS), user.getRooms());
+                            XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.DOC_USER_PATH_FRIENDS), user.getFriends());
                         }
                     }
                 });

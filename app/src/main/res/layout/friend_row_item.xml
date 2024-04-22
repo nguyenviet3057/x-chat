@@ -29,4 +29,12 @@
         android:maxWidth="64dp"
         android:singleLine="true"
         android:text="TextView" />
+
+    <TextView
+        android:id="@+id/tvOnlineStatus"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignStart="@+id/ivFriendAvatar"
+        android:layout_alignBottom="@+id/ivFriendAvatar"
+        android:background="@drawable/online_status_background" />
 </RelativeLayout>

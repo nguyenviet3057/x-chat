@@ -3,11 +3,15 @@ package com.planx.xchat;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
+import android.util.Log;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.planx.xchat.contexts.SharedPreferencesManager;
+
+import java.util.Set;
 
 public class XChat extends Application {
 
@@ -21,9 +25,11 @@ public class XChat extends Application {
     public static String colUsers = "users";
 
     // References
+    public static String refOnline = "online";
     public static String refMembers = "members";
     public static String refRooms = "rooms";
     public static String refMessages = "messages";
+    public static String refInfoConnected = ".info/connected";
 
     @Override
     public void onCreate() {
@@ -39,12 +45,21 @@ public class XChat extends Application {
         );
         database = FirebaseDatabase.getInstance();
         database.setPersistenceEnabled(true);
+        database.getReference().child(XChat.refOnline).keepSynced(true);
         database.getReference().child(XChat.refRooms).keepSynced(true);
         database.getReference().child(XChat.refMembers).keepSynced(true);
         database.getReference().child(XChat.refMessages).keepSynced(true);
         if (isDevelopment) {
             firestore.useEmulator("10.0.2.2", 8082);
             database.useEmulator("10.0.2.2", 9000);
+        }
+
+        // Send WebSocket for online status tracking
+        if (!SharedPreferencesManager.getInstance().getJwtToken().isEmpty()) {
+//            WebSocketTask webSocketTask = new WebSocketTask(WS_BASE_URL, SharedPreferencesManager.getInstance().getJwtToken());
+//            webSocketTask.execute();
+
+
         }
     }
 }

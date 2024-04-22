@@ -20,6 +20,7 @@ public class RoomReference implements Serializable {
     private String receiverName;
     private String receiverAvatar;
     private Date timestamp;
+    private boolean isOnline;
 
     public RoomReference() {
         participants = new HashMap<>();

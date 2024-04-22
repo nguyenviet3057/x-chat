@@ -18,6 +18,7 @@ import com.planx.xchat.retrofit.request.PingRequest;
 import com.planx.xchat.retrofit.response.PingResponse;
 import com.planx.xchat.retrofit.status.PingResponseStatus;
 import com.planx.xchat.retrofit.status.ResponseStatus;
+import com.planx.xchat.service.StatusService;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
@@ -48,6 +49,8 @@ public class SplashActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 Intent intent = new Intent(SplashActivity.this, MainActivity.class);
                                 startActivity(intent);
+                                Intent serviceIntent = new Intent(SplashActivity.this, StatusService.class);
+                                startService(serviceIntent);
                                 finish();
                             } else {
                                 Toast.makeText(SplashActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();

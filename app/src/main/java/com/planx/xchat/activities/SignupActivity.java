@@ -78,6 +78,8 @@ public class SignupActivity extends AppCompatActivity {
                                                     case SignupResponseStatus.OK:
                                                         MainUser.getInstance().setInstance(response.getData());
 
+                                                        XChat.database.getReference().child(XChat.refOnline).child(id).setValue(true);
+
                                                         colUsers.document(id).update(MainUser.getInstance().toMap()).addOnCompleteListener(updateTask -> {
                                                             if (updateTask.isSuccessful()) {
                                                                 SharedPreferencesManager.getInstance().setUserData();

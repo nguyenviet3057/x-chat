@@ -21,9 +21,11 @@ public class Room implements Serializable {
     private String receiverName;
     private String receiverAvatar;
     private Date timestamp;
+    private boolean isOnline;
 
     public Room() {
         participants = new ArrayList<>();
+        isOnline = false;
     }
 
     public RoomReference toRoomReference() {
@@ -44,6 +46,7 @@ public class Room implements Serializable {
         this.receiverName = receiverName;
         this.receiverAvatar = receiverAvatar;
         this.timestamp = timestamp;
+        isOnline = false;
     }
 
     public String getId() {
@@ -140,5 +143,13 @@ public class Room implements Serializable {
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
     }
 }

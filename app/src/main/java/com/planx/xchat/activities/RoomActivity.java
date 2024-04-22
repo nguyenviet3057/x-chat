@@ -38,12 +38,10 @@ import com.planx.xchat.utils.Utils;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 public class RoomActivity extends AppCompatActivity {
 
@@ -278,7 +276,7 @@ public class RoomActivity extends AppCompatActivity {
         XChat.database.getReference()
                 .child(XChat.refMessages)
                 .child(room.getId())
-                .orderByChild(Constants.refMessagePathTimestamp)
+                .orderByChild(Constants.REF_MESSAGE_PATH_TIMESTAMP)
                 .endBefore(currentOldestMessage.getTimestamp().getTime())
                 .limitToLast(messageListLimit)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -308,7 +306,7 @@ public class RoomActivity extends AppCompatActivity {
                             XChat.database.getReference()
                                     .child(XChat.refMessages)
                                     .child(room.getId())
-                                    .orderByChild(Constants.refMessagePathTimestamp)
+                                    .orderByChild(Constants.REF_MESSAGE_PATH_TIMESTAMP)
                                     .endBefore(currentOldestMessage.getTimestamp().getTime())
                                     .limitToLast(messageListLimit)
                                     .addChildEventListener(new ChildEventListener() {

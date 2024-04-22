@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -119,10 +120,30 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+//        binding.rvRoomList.setItemAnimator(null);
         binding.rvRoomList.setAdapter(roomListAdapter);
         binding.rvRoomList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
         trackUserFriendsAndRooms();
+        calculateElapsedTime();
+    }
+
+    private void calculateElapsedTime() {
+        Handler mHandler = new Handler();
+
+        // Create a Runnable to calculate and display elapsed time
+        Runnable mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                for (int roomIndex = 0; roomIndex < roomList.size(); roomIndex++) {
+                    roomListAdapter.notifyItemChanged(roomIndex, Constants.NOTIFY_UPDATE_ELAPSED_TIME_FOR_ROOM_ROW);
+                }
+                mHandler.postDelayed(this, 5000); // Run this Runnable again after 5 seconds
+            }
+        };
+
+        // Start the initial calculation and scheduling
+        mHandler.post(mRunnable);
     }
 
     private void trackUserFriendsAndRooms() {
@@ -136,7 +157,8 @@ public class MainActivity extends AppCompatActivity {
                 if (value != null && value.exists() && value.toObject(MainUser.class) != null) {
                     UserDocument userDocument = value.toObject(UserDocument.class);
 
-                    if (value.contains(Constants.docUserPathFriends)) {
+                    // Friends
+                    if (value.contains(Constants.DOC_USER_PATH_FRIENDS)) {
                         MainUser.getInstance().setFriends(userDocument.getFriends());
                         SharedPreferencesManager.getInstance().setUserData();
                         if (MainUser.getInstance().getFriends().size() > 0) {
@@ -150,7 +172,19 @@ public class MainActivity extends AppCompatActivity {
                                     if (value != null) {
                                         for (DocumentSnapshot docUser :
                                                 value.getDocuments()) {
-                                            friendListAdapter.addOrUpdate(docUser.toObject(User.class));
+                                            XChat.database.getReference().child(XChat.refOnline).child(docUser.getId()).addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    User friend = docUser.toObject(User.class);
+                                                    friend.setOnline(Boolean.TRUE.equals(snapshot.getValue(Boolean.class)));
+                                                    friendListAdapter.addOrUpdate(friend);
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+                                                    Log.w("Fetch online status", "ERROR");
+                                                }
+                                            });
                                         }
                                     } else {
                                         Log.d(this.toString(), "Current data: null");
@@ -160,12 +194,12 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    if (value.contains(Constants.docUserPathRooms)) {
+                    // Rooms
+                    if (value.contains(Constants.DOC_USER_PATH_ROOMS)) {
                         MainUser.getInstance().setRooms(userDocument.getRooms());
                         SharedPreferencesManager.getInstance().setUserData();
-                        List<String> roomIds = MainUser.getInstance().getRooms();
                         for (String roomId :
-                                roomIds) {
+                                MainUser.getInstance().getRooms()) {
                             XChat.database.getReference().child(XChat.refRooms).child(roomId).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -173,8 +207,27 @@ public class MainActivity extends AppCompatActivity {
                                         RoomReference roomReference = snapshot.getValue(RoomReference.class);
                                         Room room = roomReference.toSQLiteRoom();
                                         room.setId(roomId);
-                                        if (room.getLastId() != null)
-                                            roomListAdapter.addOrUpdate(room);
+                                        if (room.getLastId() != null) {
+                                            XChat.database.getReference().child(XChat.refMembers).child(roomId).addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    room.setOnline(false);
+                                                    for (DataSnapshot onlineStatus :
+                                                            snapshot.getChildren()) {
+                                                        if (!onlineStatus.getKey().equals(MainUser.getInstance().getId()) && Boolean.TRUE.equals(onlineStatus.getValue(Boolean.class))) {
+                                                            room.setOnline(true);
+                                                            break;
+                                                        }
+                                                    }
+                                                    roomListAdapter.addOrUpdate(room);
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                                }
+                                            });
+                                        }
                                     }
                                 }
 
@@ -183,6 +236,11 @@ public class MainActivity extends AppCompatActivity {
 
                                 }
                             });
+
+                            // Update online status in each room
+                            DatabaseReference onlineInRoom = XChat.database.getReference().child(XChat.refMembers).child(roomId).child(MainUser.getInstance().getId());
+                            onlineInRoom.setValue(true);
+                            onlineInRoom.onDisconnect().setValue(false);
                         }
                     }
                 } else {
@@ -242,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
                                 updateTask.getResult().getDocuments()) {
                             User user = docUserData.toObject(User.class);
                             user.getRooms().add(roomKey);
-                            XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.docUserPathRooms), user.getRooms());
+                            XChat.firestore.collection(XChat.colUsers).document(docUserData.getId()).update(FieldPath.of(Constants.DOC_USER_PATH_ROOMS), user.getRooms());
                         }
                     }
                 });

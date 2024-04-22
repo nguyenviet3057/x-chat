@@ -110,4 +110,12 @@
         <!--            app:layout_constraintStart_toStartOf="@id/glCenter" />-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tvOnlineStatus"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_alignStart="@+id/ivAvatar"
+        android:layout_alignBottom="@+id/ivAvatar"
+        android:background="@drawable/online_status_background" />
 </RelativeLayout>

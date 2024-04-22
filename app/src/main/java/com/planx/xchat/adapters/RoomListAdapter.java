@@ -4,21 +4,21 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.planx.xchat.R;
+import com.planx.xchat.constants.Constants;
+import com.planx.xchat.databinding.RoomRowItemBinding;
 import com.planx.xchat.models.Room;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.interfaces.IOnItemClickListener;
 import com.planx.xchat.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomListViewHolder>{
 
@@ -35,8 +35,24 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
     @NonNull
     @Override
     public RoomListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.room_row_item, parent, false);
-        return new RoomListAdapter.RoomListViewHolder(view);
+        RoomRowItemBinding binding = RoomRowItemBinding.inflate(LayoutInflater.from(parent.getContext()));
+        return new RoomListAdapter.RoomListViewHolder(binding);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RoomListViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+        } else {
+            switch ((String) payloads.get(0)) {
+                case Constants.NOTIFY_UPDATE_ELAPSED_TIME_FOR_ROOM_ROW:
+                    holder.binding.tvLastTime.setText(Utils.formatLastTime(roomList.get(position).getTimestamp().getTime()));
+                    break;
+                case Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW:
+                    holder.binding.tvOnlineStatus.setVisibility(roomList.get(position).isOnline() ? View.VISIBLE : View.INVISIBLE);
+                    break;
+            };
+        }
     }
 
     @Override
@@ -44,16 +60,17 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
         Room room = roomList.get(position);
 
         if (room.getSenderId().equals(MainUser.getInstance().getId())) {
-            Glide.with(context).load(room.getReceiverAvatar()).into(holder.ivAvatar);
-            holder.tvUserName.setText(room.getReceiverName());
-            holder.tvLastChat.setText(context.getString(R.string.sender_main_user_alias) + ": " + room.getLastChat());
+            Glide.with(context).load(room.getReceiverAvatar()).into(holder.binding.ivAvatar);
+            holder.binding.tvUserName.setText(room.getReceiverName());
+            holder.binding.tvLastChat.setText(context.getString(R.string.sender_main_user_alias) + ": " + room.getLastChat());
         } else {
-            Glide.with(context).load(room.getSenderAvatar()).into(holder.ivAvatar);
-            holder.tvUserName.setText(room.getSenderName());
-            holder.tvLastChat.setText(room.getSenderName() + ": " + room.getLastChat());
+            Glide.with(context).load(room.getSenderAvatar()).into(holder.binding.ivAvatar);
+            holder.binding.tvUserName.setText(room.getSenderName());
+            holder.binding.tvLastChat.setText(room.getSenderName() + ": " + room.getLastChat());
         }
 
-        holder.tvLastTime.setText(Utils.formatLastTime(room.getTimestamp().getTime()));
+        holder.binding.tvLastTime.setText(Utils.formatLastTime(room.getTimestamp().getTime()));
+        holder.binding.tvOnlineStatus.setVisibility(room.isOnline() ? View.VISIBLE : View.INVISIBLE);
     }
 
     @Override
@@ -68,36 +85,28 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
         for (int i = 0; i < roomList.size(); i++) {
             if (roomList.get(i).getId().equals(room.getId())) {
                 roomList.set(i, room);
-                notifyItemChanged(i, 1);
+                notifyItemChanged(i, Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW);
                 return;
             }
         }
 
         roomList.add(0, room);
-        notifyItemChanged(0, 1);
+        notifyItemChanged(1);
         notifyItemInserted(0);
     }
 
     public class RoomListViewHolder extends RecyclerView.ViewHolder {
 
-        RelativeLayout rlMessageItem;
-        ImageView ivAvatar;
-        TextView tvUserName;
-        TextView tvLastChat;
-        TextView tvLastTime;
+        private final RoomRowItemBinding binding;
 
-        public RoomListViewHolder(@NonNull View itemView) {
-            super(itemView);
-            rlMessageItem = itemView.findViewById(R.id.clMessageItem);
-            ivAvatar = itemView.findViewById(R.id.ivAvatar);
-            tvUserName = itemView.findViewById(R.id.tvUserName);
-            tvLastChat = itemView.findViewById(R.id.tvLastChat);
-            tvLastTime = itemView.findViewById(R.id.tvLastTime);
+        public RoomListViewHolder(@NonNull RoomRowItemBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
 
-            itemView.setOnClickListener(v -> {
+            binding.getRoot().setOnClickListener(v -> {
                 itemClickListener.onItemClick(getAdapterPosition());
             });
-            itemView.setOnLongClickListener(v -> {
+            binding.getRoot().setOnLongClickListener(v -> {
                 itemClickListener.onItemLongClick(getAdapterPosition());
                 return true;
             });
