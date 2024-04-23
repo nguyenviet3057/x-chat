@@ -230,8 +230,8 @@ public class RoomActivity extends AppCompatActivity {
                         @Override
                         public void onChildAdded(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
                             messageList.add(messageSnapshot.getValue(Message.class));
-                            messageListAdapter.notifyItemChanged(messageList.size() - 2);
                             messageListAdapter.notifyItemInserted(messageList.size() - 1);
+                            messageListAdapter.notifyItemChanged(messageList.size() - 2);
 
                             if (isAtBottom)
                                 binding.rvMessageList.scrollToPosition(messageList.size() - 1);

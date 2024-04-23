@@ -19,6 +19,7 @@ import com.planx.xchat.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomListViewHolder>{
 
@@ -51,6 +52,15 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
                 case Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW:
                     holder.binding.tvOnlineStatus.setVisibility(roomList.get(position).isOnline() ? View.VISIBLE : View.INVISIBLE);
                     break;
+                case Constants.NOTIFY_UPDATE_FIRST_ROOM_INFO_IN_ROOM_LIST_RECYCLERVIEW:
+                    Room room = roomList.get(position);
+                    if (room.getLastId().equals(MainUser.getInstance().getId())) {
+                        holder.binding.tvLastChat.setText(context.getString(R.string.sender_main_user_alias) + ": " + room.getLastChat());
+                    } else {
+                        holder.binding.tvLastChat.setText(room.getSenderName() + ": " + room.getLastChat());
+                    }
+                    holder.binding.tvLastTime.setText(Utils.formatLastTime(room.getTimestamp().getTime()));
+                    break;
             };
         }
     }
@@ -81,18 +91,34 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
             return 0;
     }
 
-    public void addOrUpdate(Room room) {
-        for (int i = 0; i < roomList.size(); i++) {
-            if (roomList.get(i).getId().equals(room.getId())) {
-                roomList.set(i, room);
-                notifyItemChanged(i, Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW);
+    public void addAllForFirstLoad(ArrayList<Room> sortedRoomListForFistLoad) {
+        this.roomList = sortedRoomListForFistLoad;
+        notifyItemRangeInserted(0, sortedRoomListForFistLoad.size());
+    }
+
+    public void updateRoom(Room room) {
+        Optional<Room> roomTarget = roomList.stream().filter(obj -> obj.getId().equals(room.getId())).findFirst();
+        if (roomTarget.isPresent()) {
+            int roomIndex = roomList.indexOf(roomTarget.get());
+            if (roomIndex == 0) {
+                roomList.set(roomIndex, room);
+                notifyItemChanged(roomIndex, Constants.NOTIFY_UPDATE_FIRST_ROOM_INFO_IN_ROOM_LIST_RECYCLERVIEW);
                 return;
+            } else {
+                roomList.remove(roomIndex);
+                notifyItemRemoved(roomIndex);
             }
         }
 
         roomList.add(0, room);
-        notifyItemChanged(1);
         notifyItemInserted(0);
+    }
+
+    public void updateOnlineStatus(Room room) {
+        Optional<Room> roomTarget = roomList.stream().filter(obj -> obj.getId().equals(room.getId())).findFirst();
+        if (roomTarget.isPresent()) {
+            notifyItemChanged(roomList.indexOf(roomTarget.get()), Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW);
+        }
     }
 
     public class RoomListViewHolder extends RecyclerView.ViewHolder {

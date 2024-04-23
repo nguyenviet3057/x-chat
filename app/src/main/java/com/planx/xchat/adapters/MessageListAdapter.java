@@ -70,14 +70,19 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
             } else {
                 holder.tvChat.setText(message.getChat());
-                if (messageList.get(position + 1).getSenderId().equals(message.getSenderId())
-                        && !message.getSenderId().equals(MainUser.getInstance().getId())) {
-                    holder.ivAvatar.setVisibility(View.INVISIBLE);
-                    holder.rlMessageItem.setPadding(holder.rlMessageItem.getPaddingLeft(), holder.rlMessageItem.getPaddingTop(), holder.rlMessageItem.getPaddingRight(), 0);
-                } else if (!messageList.get(position + 1).getSenderId().equals(message.getSenderId())
-                        && !message.getSenderId().equals(MainUser.getInstance().getId())) {
+                if (messageList.size() == 1 && !message.getSenderId().equals(MainUser.getInstance().getId())) {
                     Glide.with(context).load(message.getSenderAvatar()).into(holder.ivAvatar);
                     holder.ivAvatar.setVisibility(View.VISIBLE);
+                } else {
+                    if (messageList.get(position + 1).getSenderId().equals(message.getSenderId())
+                            && !message.getSenderId().equals(MainUser.getInstance().getId())) {
+                        holder.ivAvatar.setVisibility(View.INVISIBLE);
+                        holder.rlMessageItem.setPadding(holder.rlMessageItem.getPaddingLeft(), holder.rlMessageItem.getPaddingTop(), holder.rlMessageItem.getPaddingRight(), 0);
+                    } else if (!messageList.get(position + 1).getSenderId().equals(message.getSenderId())
+                            && !message.getSenderId().equals(MainUser.getInstance().getId())) {
+                        Glide.with(context).load(message.getSenderAvatar()).into(holder.ivAvatar);
+                        holder.ivAvatar.setVisibility(View.VISIBLE);
+                    }
                 }
             }
         } else {

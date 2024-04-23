@@ -25,6 +25,7 @@ import com.planx.xchat.R;
 import com.planx.xchat.XChat;
 import com.planx.xchat.adapters.FriendListAdapter;
 import com.planx.xchat.adapters.RoomListAdapter;
+import com.planx.xchat.animations.RoomListRecyclerViewAnimations;
 import com.planx.xchat.constants.Constants;
 import com.planx.xchat.contexts.SharedPreferencesManager;
 import com.planx.xchat.databinding.ActivityMainBinding;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<User> friendList;
     private FriendListAdapter friendListAdapter;
     private ICallback<String> callbackToRoom;
+    private boolean isFirstLoad = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 //        binding.rvRoomList.setItemAnimator(null);
+        binding.rvRoomList.setItemAnimator(new RoomListRecyclerViewAnimations());
         binding.rvRoomList.setAdapter(roomListAdapter);
         binding.rvRoomList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
@@ -195,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     // Rooms
+                    ArrayList<Room> sortedRoomListForFistLoad = new ArrayList<>();
                     if (value.contains(Constants.DOC_USER_PATH_ROOMS)) {
                         MainUser.getInstance().setRooms(userDocument.getRooms());
                         SharedPreferencesManager.getInstance().setUserData();
@@ -203,31 +207,45 @@ public class MainActivity extends AppCompatActivity {
                             XChat.database.getReference().child(XChat.refRooms).child(roomId).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    if (snapshot.exists()) {
-                                        RoomReference roomReference = snapshot.getValue(RoomReference.class);
-                                        Room room = roomReference.toSQLiteRoom();
-                                        room.setId(roomId);
-                                        if (room.getLastId() != null) {
-                                            XChat.database.getReference().child(XChat.refMembers).child(roomId).addValueEventListener(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                    room.setOnline(false);
-                                                    for (DataSnapshot onlineStatus :
-                                                            snapshot.getChildren()) {
-                                                        if (!onlineStatus.getKey().equals(MainUser.getInstance().getId()) && Boolean.TRUE.equals(onlineStatus.getValue(Boolean.class))) {
-                                                            room.setOnline(true);
-                                                            break;
-                                                        }
-                                                    }
-                                                    roomListAdapter.addOrUpdate(room);
-                                                }
-
-                                                @Override
-                                                public void onCancelled(@NonNull DatabaseError error) {
-
-                                                }
-                                            });
+                                    RoomReference roomReference = snapshot.getValue(RoomReference.class);
+                                    Room room = roomReference.toSQLiteRoom();
+                                    room.setId(roomId);
+                                    if (room.getLastId() != null) {
+                                        if (!isFirstLoad) {
+                                            roomListAdapter.updateRoom(room);
                                         }
+
+                                        // Room's online status
+                                        XChat.database.getReference().child(XChat.refMembers).child(roomId).addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                room.setOnline(false);
+                                                for (DataSnapshot onlineStatus :
+                                                        snapshot.getChildren()) {
+                                                    if (!onlineStatus.getKey().equals(MainUser.getInstance().getId()) && Boolean.TRUE.equals(onlineStatus.getValue(Boolean.class))) {
+                                                        room.setOnline(true);
+                                                        break;
+                                                    }
+                                                }
+
+                                                if (!isFirstLoad) {
+                                                    roomListAdapter.updateOnlineStatus(room);
+                                                } else {
+                                                    sortedRoomListForFistLoad.add(room);
+                                                    if (sortedRoomListForFistLoad.size() == MainUser.getInstance().getRooms().size()) {
+                                                        sortedRoomListForFistLoad.sort((o1, o2) -> Long.compare(o2.getTimestamp().getTime(), o1.getTimestamp().getTime()));
+                                                        roomList = sortedRoomListForFistLoad;
+                                                        roomListAdapter.addAllForFirstLoad(sortedRoomListForFistLoad);
+                                                        isFirstLoad = false;
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+
+                                            }
+                                        });
                                     }
                                 }
 
