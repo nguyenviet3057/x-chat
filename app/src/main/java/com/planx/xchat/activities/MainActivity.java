@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -199,18 +200,23 @@ public class MainActivity extends AppCompatActivity {
 
                     // Rooms
                     ArrayList<Room> sortedRoomListForFistLoad = new ArrayList<>();
+                    ArrayList<Room> noNeedTrackingRoomList = new ArrayList<>();
                     if (value.contains(Constants.DOC_USER_PATH_ROOMS)) {
                         MainUser.getInstance().setRooms(userDocument.getRooms());
                         SharedPreferencesManager.getInstance().setUserData();
+                        List<String> needTrackingRoomList = MainUser.getInstance().getRooms();
+                        needTrackingRoomList.removeIf(roomId -> roomListAdapter.getRoomList().stream().map(Room::getId).collect(Collectors.toList()).contains(roomId));
                         for (String roomId :
-                                MainUser.getInstance().getRooms()) {
+                                needTrackingRoomList) {
                             XChat.database.getReference().child(XChat.refRooms).child(roomId).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     RoomReference roomReference = snapshot.getValue(RoomReference.class);
                                     Room room = roomReference.toSQLiteRoom();
                                     room.setId(roomId);
-                                    if (room.getLastId() != null) {
+                                    if (room.getLastId() == null) {
+                                        noNeedTrackingRoomList.add(room);
+                                    } else {
                                         if (!isFirstLoad) {
                                             roomListAdapter.updateRoom(room);
                                         }
@@ -232,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
                                                     roomListAdapter.updateOnlineStatus(room);
                                                 } else {
                                                     sortedRoomListForFistLoad.add(room);
-                                                    if (sortedRoomListForFistLoad.size() == MainUser.getInstance().getRooms().size()) {
+                                                    if (sortedRoomListForFistLoad.size() == MainUser.getInstance().getRooms().size() - noNeedTrackingRoomList.size()) {
                                                         sortedRoomListForFistLoad.sort((o1, o2) -> Long.compare(o2.getTimestamp().getTime(), o1.getTimestamp().getTime()));
                                                         roomList = sortedRoomListForFistLoad;
                                                         roomListAdapter.addAllForFirstLoad(sortedRoomListForFistLoad);

@@ -45,22 +45,25 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
         if (payloads.isEmpty()) {
             onBindViewHolder(holder, position);
         } else {
-            switch ((String) payloads.get(0)) {
-                case Constants.NOTIFY_UPDATE_ELAPSED_TIME_FOR_ROOM_ROW:
-                    holder.binding.tvLastTime.setText(Utils.formatLastTime(roomList.get(position).getTimestamp().getTime()));
-                    break;
-                case Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW:
-                    holder.binding.tvOnlineStatus.setVisibility(roomList.get(position).isOnline() ? View.VISIBLE : View.INVISIBLE);
-                    break;
-                case Constants.NOTIFY_UPDATE_FIRST_ROOM_INFO_IN_ROOM_LIST_RECYCLERVIEW:
-                    Room room = roomList.get(position);
-                    if (room.getLastId().equals(MainUser.getInstance().getId())) {
-                        holder.binding.tvLastChat.setText(context.getString(R.string.sender_main_user_alias) + ": " + room.getLastChat());
-                    } else {
-                        holder.binding.tvLastChat.setText(room.getSenderName() + ": " + room.getLastChat());
-                    }
-                    holder.binding.tvLastTime.setText(Utils.formatLastTime(room.getTimestamp().getTime()));
-                    break;
+            for (Object payload :
+                    payloads) {
+                switch ((String) payload) {
+                    case Constants.NOTIFY_UPDATE_ELAPSED_TIME_FOR_ROOM_ROW:
+                        holder.binding.tvLastTime.setText(Utils.formatLastTime(roomList.get(position).getTimestamp().getTime()));
+                        break;
+                    case Constants.NOTIFY_UPDATE_ONLINE_STATUS_FOR_FRIEND_ROW_AND_ROOM_ROW:
+                        holder.binding.tvOnlineStatus.setVisibility(roomList.get(position).isOnline() ? View.VISIBLE : View.INVISIBLE);
+                        break;
+                    case Constants.NOTIFY_UPDATE_FIRST_ROOM_INFO_IN_ROOM_LIST_RECYCLERVIEW:
+                        Room room = roomList.get(position);
+                        if (room.getLastId().equals(MainUser.getInstance().getId())) {
+                            holder.binding.tvLastChat.setText(context.getString(R.string.sender_main_user_alias) + ": " + room.getLastChat());
+                        } else {
+                            holder.binding.tvLastChat.setText(room.getSenderName() + ": " + room.getLastChat());
+                        }
+                        holder.binding.tvLastTime.setText(Utils.formatLastTime(room.getTimestamp().getTime()));
+                        break;
+                }
             };
         }
     }
@@ -89,6 +92,14 @@ public class RoomListAdapter extends RecyclerView.Adapter<RoomListAdapter.RoomLi
             return roomList.size();
         else
             return 0;
+    }
+
+    public ArrayList<Room> getRoomList() {
+        return roomList;
+    }
+
+    public void setRoomList(ArrayList<Room> roomList) {
+        this.roomList = roomList;
     }
 
     public void addAllForFirstLoad(ArrayList<Room> sortedRoomListForFistLoad) {
