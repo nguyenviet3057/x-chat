@@ -1,17 +1,25 @@
 package com.planx.xchat.activities;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -78,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        askNotificationPermission();
+
         binding.svSearchResult.setOnClickListener(v -> {
             Intent intent = new Intent(this, SearchActivity.class);
             startActivity(intent);
@@ -99,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 if (position != 0) {
                     retrieveRoomByFriend(friendList.get(position));
                 } else {
-                    Toast.makeText(MainActivity.this, "Your personal page", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Your personal page: " + MainUser.getInstance().getId(), Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -343,5 +353,56 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.failedMakeRoom), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    // Declare the launcher at the top of your Activity/Fragment:
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    if (MainUser.getInstance().getFcmToken() == null) {
+                        XChat.messaging.getToken()
+                                .addOnCompleteListener(new OnCompleteListener<String>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<String> task) {
+                                        if (!task.isSuccessful()) {
+                                            Log.w(this.toString(), "Fetching FCM registration token failed", task.getException());
+                                            return;
+                                        }
+
+                                        // Get new FCM registration token
+                                        String token = task.getResult();
+
+                                        // Log and toast
+//                                        Toast.makeText(MainActivity.this, token, Toast.LENGTH_SHORT).show();
+                                        SharedPreferencesManager.getInstance().setFCMToken(token);
+                                        if (SharedPreferencesManager.getInstance().getUserId() != null) {
+                                            Map<String, Object> fcmToken = new HashMap<>();
+                                            fcmToken.put(Constants.DOC_USER_PATH_FCM_TOKEN, token);
+                                            XChat.firestore.collection(XChat.colUsers).document(SharedPreferencesManager.getInstance().getUserId()).update(fcmToken);
+                                        }
+                                    }
+                                });
+                    }
+                } else {
+                    // TODO: Inform user that that your app will not show notifications.
+                }
+            });
+
+    private void askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // TODO: display an educational UI explaining to the user the features that will be enabled
+                //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
+                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+                //       If the user selects "No thanks," allow the user to continue without notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 }

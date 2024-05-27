@@ -4,15 +4,24 @@ import android.app.Application;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.util.TypedValue;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.planx.xchat.R;
 import com.planx.xchat.XChat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -100,6 +109,76 @@ public class Utils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static final String TAG = "FCMHelper";
+    private static final String FCM_SEND_URL = "https://fcm.googleapis.com/v1/projects/xchat-59115/messages:send";
+    private static String getAccessToken(Context context) {
+        try {
+            InputStream inputStream = context.getResources().openRawResource(R.raw.service_account);
+
+            GoogleCredentials googleCredentials = GoogleCredentials
+                    .fromStream(inputStream)
+                    .createScoped("https://www.googleapis.com/auth/firebase.messaging");
+            googleCredentials.refreshIfExpired();
+            return googleCredentials.getAccessToken().getTokenValue();
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting access token", e);
+        }
+        return null;
+    }
+
+    public static void sendMessageToToken(Context context, String token, String title, String body, String roomId) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                try {
+                    String accessToken = getAccessToken(context);
+                    if (accessToken != null) {
+                        URL url = new URL(FCM_SEND_URL);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setUseCaches(false);
+                        conn.setDoInput(true);
+                        conn.setDoOutput(true);
+                        conn.setRequestMethod("POST");
+                        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+                        conn.setRequestProperty("Content-Type", "application/json");
+
+                        JSONObject json = new JSONObject();
+                        JSONObject message = new JSONObject();
+                        JSONObject notification = new JSONObject();
+                        JSONObject data = new JSONObject();
+
+                        notification.put("title", title);
+                        notification.put("body", body);
+
+                        data.put("roomId", roomId);
+
+                        message.put("token", token);
+                        message.put("notification", notification);
+                        message.put("data", data);
+
+                        json.put("message", message);
+
+
+                        OutputStream outputStream = conn.getOutputStream();
+                        outputStream.write(json.toString().getBytes());
+                        outputStream.flush();
+                        outputStream.close();
+
+                        int responseCode = conn.getResponseCode();
+                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                            Log.d(TAG, "Message sent to token successfully");
+                        } else {
+                            Log.e(TAG, "Failed to send message to token. Response Code: " + responseCode);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception occurred while sending message to token", e);
+                }
+                return null;
+            }
+        }.execute();
     }
 }
 

@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="random_long_string">1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890</string>
-    <string name="app_name">X-Chat</string>
+    <string name="app_name">ConnecX</string>
 
     <string name="etUsername_hint">Username</string>
     <string name="etPassword_hint">Password</string>
@@ -34,7 +34,7 @@
     <string name="findFriend">Find your friends</string>
     <string name="chats">Chats</string>
 
-    <!--    Message layout -->
+    <!--    Room layout -->
     <string name="messageListLimit">10</string>
     <string name="failedMakeRoom">Can not make a new room for you all</string>
     <string name="failedAddMessage">Can not send your message</string>

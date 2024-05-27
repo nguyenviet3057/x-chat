@@ -23,6 +23,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.messaging.RemoteMessage;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
 import com.planx.xchat.adapters.MessageListAdapter;
@@ -36,12 +37,24 @@ import com.planx.xchat.models.Room;
 import com.planx.xchat.models.User;
 import com.planx.xchat.utils.Utils;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RoomActivity extends AppCompatActivity {
 
@@ -170,6 +183,22 @@ public class RoomActivity extends AppCompatActivity {
 
                         binding.etMessage.setText("");
                         binding.rvMessageList.scrollToPosition(messageList.size() - 1);
+
+                        String receiverFCMToken =  room.getParticipants()
+                                .stream()
+                                .filter(u -> !u.getId().equals(MainUser.getInstance().getId()))
+                                .collect(Collectors.toList())
+                                .get(0)
+                                .getFcmToken();
+                        if (receiverFCMToken != null) {
+                            Utils.sendMessageToToken(
+                                    this,
+                                    receiverFCMToken,
+                                    getResources().getString(R.string.app_name),
+                                    MainUser.getInstance().getFirstName() + ": " + messageText,
+                                    roomId
+                            );
+                        }
                     } else {
                         Log.e(this.toString(), task.getException().getMessage());
                         Toast.makeText(RoomActivity.this, getResources().getString(R.string.failedAddMessage), Toast.LENGTH_LONG).show();
@@ -221,45 +250,43 @@ public class RoomActivity extends AppCompatActivity {
         XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(messageListLimit).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    if (snapshot.getChildrenCount() == messageListLimit) {
-                        messageListAdapter.addLoadingMoreSection();
+                if (snapshot.getChildrenCount() == messageListLimit) {
+                    messageListAdapter.addLoadingMoreSection();
+                }
+
+                XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(messageListLimit).addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+                        messageList.add(messageSnapshot.getValue(Message.class));
+                        messageListAdapter.notifyItemInserted(messageList.size() - 1);
+                        messageListAdapter.notifyItemChanged(messageList.size() - 2);
+
+                        if (isAtBottom)
+                            binding.rvMessageList.scrollToPosition(messageList.size() - 1);
                     }
 
-                    XChat.database.getReference().child(XChat.refMessages).child(room.getId()).limitToLast(messageListLimit).addChildEventListener(new ChildEventListener() {
-                        @Override
-                        public void onChildAdded(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
-                            messageList.add(messageSnapshot.getValue(Message.class));
-                            messageListAdapter.notifyItemInserted(messageList.size() - 1);
-                            messageListAdapter.notifyItemChanged(messageList.size() - 2);
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+                        Toast.makeText(RoomActivity.this, "Latest: " + messageSnapshot.getValue(Message.class).getChat(), Toast.LENGTH_LONG).show();
+                    }
 
-                            if (isAtBottom)
-                                binding.rvMessageList.scrollToPosition(messageList.size() - 1);
-                        }
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot messageSnapshot) {
 
-                        @Override
-                        public void onChildChanged(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
-                            Toast.makeText(RoomActivity.this, "Latest: " + messageSnapshot.getValue(Message.class).getChat(), Toast.LENGTH_LONG).show();
-                        }
+                    }
 
-                        @Override
-                        public void onChildRemoved(@NonNull DataSnapshot messageSnapshot) {
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
 
-                        }
+                    }
 
-                        @Override
-                        public void onChildMoved(@NonNull DataSnapshot messageSnapshot, @Nullable String previousChildName) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
-                        }
+                    }
+                });
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
-                        }
-                    });
-
-                    messageListLimit = 10;
-                }
+                messageListLimit = 10;
             }
 
             @Override

@@ -11,6 +11,7 @@ public class User implements Serializable {
     private String fullName;
     private String avatar;
     private boolean isOnline;
+    private String fcmToken;
     private List<String> friends;
     private List<String> rooms;
 
@@ -19,13 +20,14 @@ public class User implements Serializable {
         rooms = new ArrayList<>();
     }
 
-    public User(String id, String firstName, String lastName, String fullName, String avatar, boolean isOnline) {
+    public User(String id, String firstName, String lastName, String fullName, String avatar, boolean isOnline, String fcmToken) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.fullName = fullName;
         this.avatar = avatar;
         this.isOnline = isOnline;
+        this.fcmToken = fcmToken;
         this.friends = new ArrayList<>();
         this.rooms = new ArrayList<>();
     }
@@ -76,6 +78,14 @@ public class User implements Serializable {
 
     public void setOnline(boolean online) {
         isOnline = online;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     public List<String> getFriends() {

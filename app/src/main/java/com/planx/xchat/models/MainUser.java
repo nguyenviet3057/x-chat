@@ -15,6 +15,7 @@ public class MainUser {
     private List<String> friends;
     private List<String> rooms;
     private String jwtToken;
+    private String fcmToken;
 
     private static MainUser instance;
 
@@ -31,6 +32,7 @@ public class MainUser {
         result.put("fullName", fullName);
         result.put("avatar", avatar);
         result.put("isOnline", isOnline);
+        result.put("fcmToken", fcmToken);
         result.put("friends", friends);
         result.put("rooms", rooms);
 
@@ -96,6 +98,14 @@ public class MainUser {
         isOnline = online;
     }
 
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
     public List<String> getFriends() {
         return friends;
     }
@@ -121,6 +131,6 @@ public class MainUser {
     }
 
     public User toSQLiteUser() {
-        return new User(id, firstName, lastName, fullName, avatar, isOnline);
+        return new User(id, firstName, lastName, fullName, avatar, isOnline, fcmToken);
     }
 }

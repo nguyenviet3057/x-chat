@@ -9,6 +9,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.planx.xchat.contexts.SharedPreferencesManager;
 
 import java.util.Set;
@@ -20,6 +21,7 @@ public class XChat extends Application {
     public static boolean isDevelopment = false;
     public static FirebaseFirestore firestore;
     public static FirebaseDatabase database;
+    public static FirebaseMessaging messaging;
 
     // Collections
     public static String colUsers = "users";
@@ -54,12 +56,6 @@ public class XChat extends Application {
             database.useEmulator("10.0.2.2", 9000);
         }
 
-        // Send WebSocket for online status tracking
-        if (!SharedPreferencesManager.getInstance().getJwtToken().isEmpty()) {
-//            WebSocketTask webSocketTask = new WebSocketTask(WS_BASE_URL, SharedPreferencesManager.getInstance().getJwtToken());
-//            webSocketTask.execute();
-
-
-        }
+        messaging = FirebaseMessaging.getInstance();
     }
 }

@@ -20,6 +20,7 @@ public class SharedPreferencesManager {
     private static final String USER_FIRSTNAME = "USER_FIRSTNAME";
     private static final String USER_LASTNAME = "USER_LASTNAME";
     private static final String USER_FULLNAME = "USER_FULLNAME";
+    private static final String USER_FCMTOKEN = "USER_FCMTOKEN";
 
     private SharedPreferencesManager() {
         sharedPreferences = XChat.context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -38,6 +39,7 @@ public class SharedPreferencesManager {
         editor.putString(USER_FIRSTNAME, MainUser.getInstance().getFirstName());
         editor.putString(USER_LASTNAME, MainUser.getInstance().getLastName());
         editor.putString(USER_FULLNAME, MainUser.getInstance().getFullName());
+        editor.putString(USER_FULLNAME, MainUser.getInstance().getFcmToken());
         editor.apply();
     }
 
@@ -46,6 +48,7 @@ public class SharedPreferencesManager {
         MainUser.getInstance().setFirstName(sharedPreferences.getString(USER_FIRSTNAME, null));
         MainUser.getInstance().setLastName(sharedPreferences.getString(USER_LASTNAME, null));
         MainUser.getInstance().setFullName(sharedPreferences.getString(USER_FULLNAME, null));
+        MainUser.getInstance().setFcmToken(sharedPreferences.getString(USER_FCMTOKEN, null));
     }
 
     public void clearData() {
@@ -82,5 +85,14 @@ public class SharedPreferencesManager {
 
     public Set<String> getCookies() {
         return sharedPreferences.getStringSet(PREF_COOKIES, new HashSet<>());
+    }
+
+    public String getUserId() {
+        return sharedPreferences.getString(USER_ID, null);
+    }
+
+    public void setFCMToken(String fcmToken) {
+        editor.putString(USER_FCMTOKEN, fcmToken);
+        editor.apply();
     }
 }
