@@ -21,6 +21,7 @@ import com.planx.xchat.R;
 import com.planx.xchat.XChat;
 import com.planx.xchat.adapters.SearchResultListAdapter;
 import com.planx.xchat.constants.Constants;
+import com.planx.xchat.databinding.ActivityRoomBinding;
 import com.planx.xchat.databinding.ActivitySearchBinding;
 import com.planx.xchat.firebase.database.RoomReference;
 import com.planx.xchat.interfaces.ICallback;
@@ -48,6 +49,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 public class SearchActivity extends AppCompatActivity {
 
     private ActivitySearchBinding binding;
+    private ActivityRoomBinding roomBinding;
     private ArrayList<User> friendList;
     private ArrayList<User> searchResultList;
     private SearchResultListAdapter searchResultListAdapter;
@@ -64,6 +66,7 @@ public class SearchActivity extends AppCompatActivity {
                 Intent intent = new Intent(SearchActivity.this, RoomActivity.class);
                 intent.putExtra(getResources().getString(R.string.Main2MessageRoomId), result);
                 startActivity(intent);
+                finish();
             }
 
             @Override
@@ -142,7 +145,8 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void handleError(Throwable throwable) {
-        Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_LONG).show();
+//        Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.searchError), Toast.LENGTH_LONG).show();
         Log.e(this.toString(), throwable.getMessage());
     }
 

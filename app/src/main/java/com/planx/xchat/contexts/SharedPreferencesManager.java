@@ -16,10 +16,12 @@ public class SharedPreferencesManager {
     private static final String PREF_NAME = "Config";
     private static final String PREF_COOKIES = "COOKIES";
     private static final String JWT_TOKEN = "jwt_token";
+    private static final String LOGIN_STATUS = "LOGIN_STATUS";
     private static final String USER_ID = "USER_ID";
     private static final String USER_FIRSTNAME = "USER_FIRSTNAME";
     private static final String USER_LASTNAME = "USER_LASTNAME";
     private static final String USER_FULLNAME = "USER_FULLNAME";
+    private static final String USER_AVATAR = "USER_AVATAR";
     private static final String USER_FCMTOKEN = "USER_FCMTOKEN";
 
     private SharedPreferencesManager() {
@@ -39,7 +41,8 @@ public class SharedPreferencesManager {
         editor.putString(USER_FIRSTNAME, MainUser.getInstance().getFirstName());
         editor.putString(USER_LASTNAME, MainUser.getInstance().getLastName());
         editor.putString(USER_FULLNAME, MainUser.getInstance().getFullName());
-        editor.putString(USER_FULLNAME, MainUser.getInstance().getFcmToken());
+        editor.putString(USER_AVATAR, MainUser.getInstance().getAvatar());
+        editor.putString(USER_FCMTOKEN, MainUser.getInstance().getFcmToken());
         editor.apply();
     }
 
@@ -48,6 +51,7 @@ public class SharedPreferencesManager {
         MainUser.getInstance().setFirstName(sharedPreferences.getString(USER_FIRSTNAME, null));
         MainUser.getInstance().setLastName(sharedPreferences.getString(USER_LASTNAME, null));
         MainUser.getInstance().setFullName(sharedPreferences.getString(USER_FULLNAME, null));
+        MainUser.getInstance().setAvatar(sharedPreferences.getString(USER_AVATAR, null));
         MainUser.getInstance().setFcmToken(sharedPreferences.getString(USER_FCMTOKEN, null));
     }
 
@@ -94,5 +98,13 @@ public class SharedPreferencesManager {
     public void setFCMToken(String fcmToken) {
         editor.putString(USER_FCMTOKEN, fcmToken);
         editor.apply();
+    }
+
+    public int getLoginStatus() {
+        return sharedPreferences.getInt(LOGIN_STATUS, -1);
+    }
+
+    public void setLoginStatus(int status) {
+        editor.putInt(LOGIN_STATUS, status).commit();
     }
 }

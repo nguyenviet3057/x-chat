@@ -240,6 +240,7 @@
             android:layout_marginBottom="36dp"
             android:backgroundTint="@color/mint"
             android:text="@string/btnSignup"
+            android:textAlignment="textEnd"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="wrap"></Button>

@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.google.firebase.firestore.CollectionReference;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
+import com.planx.xchat.constants.AppLoginStatus;
 import com.planx.xchat.retrofit.status.ResponseStatus;
 import com.planx.xchat.contexts.SharedPreferencesManager;
 import com.planx.xchat.databinding.ActivitySignupBinding;
@@ -62,6 +63,8 @@ public class SignupActivity extends AppCompatActivity {
                     Toast.makeText(this, getResources().getString(R.string.incorrectConfirmPassword), Toast.LENGTH_LONG).show();
                     binding.etPasswordConfirm.requestFocus();
                 } else {
+                    binding.btnSignup.setEnabled(false);
+                    binding.btnSignup.setText(getString(R.string.btnSigningUp));
                     User user = new User();
                     user.setFirstName(firstName);
                     user.setLastName(lastName);
@@ -70,7 +73,7 @@ public class SignupActivity extends AppCompatActivity {
                     colUsers.add(user)
                             .addOnSuccessListener(task -> {
                                 String id = task.getId();
-                                Toast.makeText(this, id, Toast.LENGTH_LONG).show();
+//                                Toast.makeText(this, id, Toast.LENGTH_LONG).show();
                                 RetrofitClient.getInstance().sendRequest(RetrofitClient.getInstance().getApiService().signup(new SignupRequest(id, firstName, lastName, username, password, confirmPassword)), new ApiResponseCallback<SignupResponse>() {
                                             @Override
                                             public void onSuccess(SignupResponse response) {
@@ -82,6 +85,7 @@ public class SignupActivity extends AppCompatActivity {
 
                                                         colUsers.document(id).update(MainUser.getInstance().toMap()).addOnCompleteListener(updateTask -> {
                                                             if (updateTask.isSuccessful()) {
+                                                                SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.LOGIN_SUCCESS);
                                                                 SharedPreferencesManager.getInstance().setUserData();
                                                                 SharedPreferencesManager.getInstance().setJwtToken(MainUser.getInstance().getJwtToken());
                                                                 Intent intent = new Intent(SignupActivity.this, MainActivity.class);
@@ -108,6 +112,8 @@ public class SignupActivity extends AppCompatActivity {
                                             public void onFailure(Throwable throwable) {
                                                 Log.e(this.toString(), throwable.getMessage());
                                                 Toast.makeText(SignupActivity.this, getResources().getString(R.string.signupFailed), Toast.LENGTH_LONG).show();
+                                                binding.btnSignup.setText(getString(R.string.btnSignup));
+                                                binding.btnSignup.setEnabled(true);
                                             }
                                         });
                             })

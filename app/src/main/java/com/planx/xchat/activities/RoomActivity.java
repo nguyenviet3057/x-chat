@@ -9,10 +9,12 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
@@ -27,11 +29,15 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.planx.xchat.R;
 import com.planx.xchat.XChat;
 import com.planx.xchat.adapters.MessageListAdapter;
+import com.planx.xchat.constants.AppLoginStatus;
 import com.planx.xchat.constants.Constants;
+import com.planx.xchat.contexts.SharedPreferencesManager;
 import com.planx.xchat.databinding.ActivityRoomBinding;
+import com.planx.xchat.interfaces.NetworkChangeListener;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.firebase.database.RoomReference;
 import com.planx.xchat.models.Message;
+import com.planx.xchat.service.NetworkCallbackImpl;
 import com.planx.xchat.sqlite.DatabaseHandler;
 import com.planx.xchat.models.Room;
 import com.planx.xchat.models.User;
@@ -56,7 +62,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class RoomActivity extends AppCompatActivity {
+public class RoomActivity extends AppCompatActivity implements NetworkChangeListener {
 
     private DatabaseHandler db;
     private ActivityRoomBinding binding;
@@ -68,6 +74,8 @@ public class RoomActivity extends AppCompatActivity {
     private boolean isAtBottom = true;
     private boolean isAllowLoadMore = true;
     private int messageListLimit = 30;
+    private ConnectivityManager connectivityManager;
+    private NetworkCallbackImpl networkCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +85,11 @@ public class RoomActivity extends AppCompatActivity {
 
         binding = ActivityRoomBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        networkCallback = new NetworkCallbackImpl(this);
+
+        registerNetworkCallback();
 
         Intent intent = getIntent();
         if (intent.getExtras() != null) {
@@ -145,6 +158,69 @@ public class RoomActivity extends AppCompatActivity {
             return true;
         });
 
+        if (SharedPreferencesManager.getInstance().getLoginStatus() != AppLoginStatus.LOGIN_SUCCESS) {
+            if (SharedPreferencesManager.getInstance().getLoginStatus() == AppLoginStatus.NETWORK_DISCONNECTED) {
+                binding.tvAlert.setText(getString(R.string.networkDisconnectedLimitFunction));
+            } else {
+                binding.tvAlert.setText(getString(R.string.notLoggedInLimitFunctions));
+            }
+            binding.tvAlert.setVisibility(View.VISIBLE);
+
+            binding.etMessage.setFocusable(false);
+            binding.etMessage.setOnClickListener(v -> {
+                Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_LONG).show();
+            });
+
+            binding.btnSend.setFocusable(false);
+            binding.btnSend.setOnClickListener(v -> {
+                Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_LONG).show();
+            });
+        } else {
+            binding.tvAlert.setVisibility(View.GONE);
+
+            // Send message
+            binding.btnSend.setOnClickListener(v -> {
+                if (!binding.etMessage.getText().toString().trim().isEmpty()) {
+                    String messageText = binding.etMessage.getText().toString().trim();
+
+                    DatabaseReference messageRef = XChat.database.getReference().child(XChat.refMessages).child(room.getId());
+                    String messageKey = messageRef.push().getKey();
+                    Message message = new Message(messageKey, messageText, new ArrayList<>(), MainUser.getInstance().getId(), MainUser.getInstance().getFirstName(), MainUser.getInstance().getAvatar(), room.getReceiverId(), room.getReceiverName(), room.getReceiverAvatar(), Date.from(Instant.now()));
+                    messageRef.child(messageKey).setValue(message).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            room.setLastChat(messageText);
+                            room.setTimestamp(Date.from(Instant.now()));
+                            Map<String, Object> updateRoom = new HashMap<>();
+                            updateRoom.put(room.getId(), room.toRoomReference());
+                            XChat.database.getReference().child(XChat.refRooms).updateChildren(updateRoom);
+
+                            binding.etMessage.setText("");
+                            binding.rvMessageList.scrollToPosition(messageList.size() - 1);
+
+                            String receiverFCMToken = room.getParticipants()
+                                    .stream()
+                                    .filter(u -> !u.getId().equals(MainUser.getInstance().getId()))
+                                    .collect(Collectors.toList())
+                                    .get(0)
+                                    .getFcmToken();
+                            if (receiverFCMToken != null) {
+                                Utils.sendMessageToToken(
+                                        this,
+                                        receiverFCMToken,
+                                        getResources().getString(R.string.app_name),
+                                        MainUser.getInstance().getFirstName() + ": " + messageText,
+                                        roomId
+                                );
+                            }
+                        } else {
+                            Log.e(this.toString(), task.getException().getMessage());
+                            Toast.makeText(RoomActivity.this, getResources().getString(R.string.failedAddMessage), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            });
+        }
+
         int etMessageMaxLines = binding.etMessage.getMaxLines();
         binding.etMessage.addTextChangedListener(new TextWatcher() {
             @Override
@@ -162,48 +238,6 @@ public class RoomActivity extends AppCompatActivity {
 
                 binding.etMessage.getLayoutParams().height = lineHeight * Math.min(lineCount, etMessageMaxLines);
                 binding.etMessage.setLines(Math.min(lineCount, etMessageMaxLines));
-            }
-        });
-
-        // Send message
-        binding.btnSend.setOnClickListener(v -> {
-            if (!binding.etMessage.getText().toString().trim().isEmpty()) {
-                String messageText = binding.etMessage.getText().toString();
-
-                DatabaseReference messageRef = XChat.database.getReference().child(XChat.refMessages).child(room.getId());
-                String messageKey = messageRef.push().getKey();
-                Message message = new Message(messageKey, messageText, new ArrayList<>(), MainUser.getInstance().getId(), MainUser.getInstance().getFirstName(), MainUser.getInstance().getAvatar(), room.getReceiverId(), room.getReceiverName(), room.getReceiverAvatar(), Date.from(Instant.now()));
-                messageRef.child(messageKey).setValue(message).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        room.setLastChat(messageText);
-                        room.setTimestamp(Date.from(Instant.now()));
-                        Map<String, Object> updateRoom = new HashMap<>();
-                        updateRoom.put(room.getId(), room.toRoomReference());
-                        XChat.database.getReference().child(XChat.refRooms).updateChildren(updateRoom);
-
-                        binding.etMessage.setText("");
-                        binding.rvMessageList.scrollToPosition(messageList.size() - 1);
-
-                        String receiverFCMToken =  room.getParticipants()
-                                .stream()
-                                .filter(u -> !u.getId().equals(MainUser.getInstance().getId()))
-                                .collect(Collectors.toList())
-                                .get(0)
-                                .getFcmToken();
-                        if (receiverFCMToken != null) {
-                            Utils.sendMessageToToken(
-                                    this,
-                                    receiverFCMToken,
-                                    getResources().getString(R.string.app_name),
-                                    MainUser.getInstance().getFirstName() + ": " + messageText,
-                                    roomId
-                            );
-                        }
-                    } else {
-                        Log.e(this.toString(), task.getException().getMessage());
-                        Toast.makeText(RoomActivity.this, getResources().getString(R.string.failedAddMessage), Toast.LENGTH_LONG).show();
-                    }
-                });
             }
         });
 
@@ -371,5 +405,90 @@ public class RoomActivity extends AppCompatActivity {
 
                     }
                 });
+    }
+
+    @Override
+    public void onNetworkChange(boolean isConnected) {
+        if (!isConnected) {
+            runOnUiThread(() -> {
+                binding.tvAlert.setText(getString(R.string.networkDisconnectedLimitFunction));
+                binding.tvAlert.setVisibility(View.VISIBLE);
+                SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.NETWORK_DISCONNECTED);
+
+                binding.etMessage.setFocusable(false);
+                binding.etMessage.setOnClickListener(v -> {
+                    Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_LONG).show();
+                });
+
+                binding.btnSend.setFocusable(false);
+                binding.btnSend.setOnClickListener(v -> {
+                    Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_LONG).show();
+                });
+            });
+        } else {
+            runOnUiThread(() -> {
+                binding.tvAlert.setVisibility(View.GONE);
+                SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.LOGIN_SUCCESS);
+
+                binding.etMessage.setFocusable(true);
+                binding.btnSend.setFocusable(true);
+
+                // Send message
+                binding.btnSend.setOnClickListener(v -> {
+                    if (!binding.etMessage.getText().toString().trim().isEmpty()) {
+                        String messageText = binding.etMessage.getText().toString().trim();
+
+                        DatabaseReference messageRef = XChat.database.getReference().child(XChat.refMessages).child(room.getId());
+                        String messageKey = messageRef.push().getKey();
+                        Message message = new Message(messageKey, messageText, new ArrayList<>(), MainUser.getInstance().getId(), MainUser.getInstance().getFirstName(), MainUser.getInstance().getAvatar(), room.getReceiverId(), room.getReceiverName(), room.getReceiverAvatar(), Date.from(Instant.now()));
+                        messageRef.child(messageKey).setValue(message).addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                room.setLastChat(messageText);
+                                room.setTimestamp(Date.from(Instant.now()));
+                                Map<String, Object> updateRoom = new HashMap<>();
+                                updateRoom.put(room.getId(), room.toRoomReference());
+                                XChat.database.getReference().child(XChat.refRooms).updateChildren(updateRoom);
+
+                                binding.etMessage.setText("");
+                                binding.rvMessageList.scrollToPosition(messageList.size() - 1);
+
+                                String receiverFCMToken = room.getParticipants()
+                                        .stream()
+                                        .filter(u -> !u.getId().equals(MainUser.getInstance().getId()))
+                                        .collect(Collectors.toList())
+                                        .get(0)
+                                        .getFcmToken();
+                                if (receiverFCMToken != null) {
+                                    Utils.sendMessageToToken(
+                                            this,
+                                            receiverFCMToken,
+                                            getResources().getString(R.string.app_name),
+                                            MainUser.getInstance().getFirstName() + ": " + messageText,
+                                            roomId
+                                    );
+                                }
+                            } else {
+                                Log.e(this.toString(), task.getException().getMessage());
+                                Toast.makeText(RoomActivity.this, getResources().getString(R.string.failedAddMessage), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                });
+            });
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterNetworkCallback();
+    }
+
+    private void registerNetworkCallback() {
+        connectivityManager.registerDefaultNetworkCallback(networkCallback);
+    }
+
+    private void unregisterNetworkCallback() {
+        connectivityManager.unregisterNetworkCallback(networkCallback);
     }
 }

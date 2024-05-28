@@ -8,6 +8,7 @@
     <color name="darkMint">#3B7550</color>
     <color name="grayGreen">#324A3A</color>
     <color name="blackGreen">#2B332E</color>
+    <color name="bgWarning">#FFC107</color>
     <color name="material_dynamic_neutral95">#E5E5E5</color>
     <color name="material_dynamic_neutral90">#E1E3E5</color>
 </resources>

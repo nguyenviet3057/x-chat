@@ -4,15 +4,19 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
@@ -35,14 +39,17 @@ import com.planx.xchat.adapters.FriendListAdapter;
 import com.planx.xchat.adapters.RoomListAdapter;
 import com.planx.xchat.animations.RoomListRecyclerViewAnimations;
 import com.planx.xchat.constants.Constants;
+import com.planx.xchat.constants.AppLoginStatus;
 import com.planx.xchat.contexts.SharedPreferencesManager;
 import com.planx.xchat.databinding.ActivityMainBinding;
 import com.planx.xchat.firebase.firestore.UserDocument;
 import com.planx.xchat.interfaces.ICallback;
+import com.planx.xchat.interfaces.NetworkChangeListener;
 import com.planx.xchat.models.MainUser;
 import com.planx.xchat.firebase.database.RoomReference;
 import com.planx.xchat.interfaces.IOnItemClickListener;
 import com.planx.xchat.models.Room;
+import com.planx.xchat.service.NetworkCallbackImpl;
 import com.planx.xchat.sqlite.DatabaseHandler;
 import com.planx.xchat.models.User;
 
@@ -52,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NetworkChangeListener {
 
     private DatabaseHandler db;
     private ActivityMainBinding binding;
@@ -62,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private FriendListAdapter friendListAdapter;
     private ICallback<String> callbackToRoom;
     private boolean isFirstLoad = true;
+    private ConnectivityManager connectivityManager;
+    private NetworkCallbackImpl networkCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,15 +95,77 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        askNotificationPermission();
+        connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        networkCallback = new NetworkCallbackImpl(this);
 
-        binding.svSearchResult.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SearchActivity.class);
-            startActivity(intent);
+        registerNetworkCallback();
+
+        askNotificationPermission();
+        XChat.messaging.deleteToken().addOnCompleteListener(deletedToken -> {
+            MainUser.getInstance().setFcmToken(null);
+            XChat.messaging.getToken()
+                    .addOnCompleteListener(new OnCompleteListener<String>() {
+                        @Override
+                        public void onComplete(@NonNull Task<String> task) {
+                            if (!task.isSuccessful()) {
+//                                Log.w(this.toString(), "Fetching FCM registration token failed", task.getException());
+                                return;
+                            }
+
+                            // Get new FCM registration token
+                            String token = task.getResult();
+
+                            // Log and toast
+//                                                  Toast.makeText(MainActivity.this, token, Toast.LENGTH_SHORT).show();
+                            SharedPreferencesManager.getInstance().setFCMToken(token);
+                            if (SharedPreferencesManager.getInstance().getUserId() != null) {
+                                Map<String, Object> fcmToken = new HashMap<>();
+                                fcmToken.put(Constants.DOC_USER_PATH_FCM_TOKEN, token);
+                                XChat.firestore.collection(XChat.colUsers).document(SharedPreferencesManager.getInstance().getUserId()).update(fcmToken);
+                                MainUser.getInstance().setFcmToken(token);
+                            }
+                        }
+                    });
         });
 
+        if (SharedPreferencesManager.getInstance().getLoginStatus() != AppLoginStatus.LOGIN_SUCCESS) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.notLoggedInLimitFunctions)
+                    .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancels the dialog.
+                        }
+                    }).show();
+            binding.tvAlert.setText(getString(R.string.notLoggedInLimitFunctions));
+            binding.tvAlert.setVisibility(View.VISIBLE);
+
+            binding.svSearchResult.setFocusable(false);
+            binding.svSearchResult.setOnClickListener(v -> {
+                Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_LONG).show();
+            });
+        } else {
+            binding.tvAlert.setVisibility(View.GONE);
+
+            binding.svSearchResult.setOnClickListener(v -> {
+                Intent intent = new Intent(this, SearchActivity.class);
+                startActivity(intent);
+            });
+        }
+
         binding.ibLogout.setOnClickListener(v -> {
-            SharedPreferencesManager.getInstance().clearData();
+            XChat.database.getReference().child(XChat.refOnline).child(MainUser.getInstance().getId()).setValue(false);
+            XChat.firestore.collection(XChat.colUsers).document(MainUser.getInstance().getId()).get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    User mainUser = task.getResult().toObject(User.class); // To get the latest rooms (Sync to real-time)
+                    if (mainUser != null) {
+                        for (String roomId :
+                                mainUser.getRooms()) {
+                            XChat.database.getReference().child(XChat.refMembers).child(roomId).child(MainUser.getInstance().getId()).setValue(false);
+                        }
+                    }
+                }
+                SharedPreferencesManager.getInstance().clearData();
+            });
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
@@ -104,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         friendListAdapter = new FriendListAdapter(MainActivity.this, friendList, new IOnItemClickListener() {
             @Override
             public void onItemClick(int position) {
-                Toast.makeText(MainActivity.this, friendList.get(position).getFirstName(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, friendList.get(position).getFirstName(), Toast.LENGTH_SHORT).show();
 
                 if (position != 0) {
                     retrieveRoomByFriend(friendList.get(position));
@@ -403,6 +474,72 @@ public class MainActivity extends AppCompatActivity {
                 // Directly ask for the permission
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
+        } else {
+            if (MainUser.getInstance().getFcmToken() == null) {
+                XChat.messaging.getToken()
+                        .addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                if (!task.isSuccessful()) {
+                                    Log.w(this.toString(), "Fetching FCM registration token failed", task.getException());
+                                    return;
+                                }
+
+                                // Get new FCM registration token
+                                String token = task.getResult();
+
+                                // Log and toast
+//                                        Toast.makeText(MainActivity.this, token, Toast.LENGTH_SHORT).show();
+                                SharedPreferencesManager.getInstance().setFCMToken(token);
+                                if (SharedPreferencesManager.getInstance().getUserId() != null) {
+                                    Map<String, Object> fcmToken = new HashMap<>();
+                                    fcmToken.put(Constants.DOC_USER_PATH_FCM_TOKEN, token);
+                                    XChat.firestore.collection(XChat.colUsers).document(SharedPreferencesManager.getInstance().getUserId()).update(fcmToken);
+                                }
+                            }
+                        });
+            }
         }
+    }
+
+    @Override
+    public void onNetworkChange(boolean isConnected) {
+        if (!isConnected) {
+            runOnUiThread(() -> {
+                binding.tvAlert.setText(getString(R.string.networkDisconnectedLimitFunction));
+                binding.tvAlert.setVisibility(View.VISIBLE);
+                SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.NETWORK_DISCONNECTED);
+
+                binding.svSearchResult.setFocusable(false);
+                binding.svSearchResult.setOnClickListener(v -> {
+                    Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_SHORT).show();
+                });
+            });
+        } else {
+            runOnUiThread(() -> {
+                binding.tvAlert.setVisibility(View.GONE);
+                SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.LOGIN_SUCCESS);
+
+                binding.svSearchResult.setFocusable(true);
+                binding.svSearchResult.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, SearchActivity.class);
+                    startActivity(intent);
+                });
+            });
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterNetworkCallback();
+    }
+
+    private void registerNetworkCallback() {
+        connectivityManager.registerDefaultNetworkCallback(networkCallback);
+    }
+
+    private void unregisterNetworkCallback() {
+        connectivityManager.unregisterNetworkCallback(networkCallback);
     }
 }

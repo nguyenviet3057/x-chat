@@ -5,10 +5,15 @@
     <string name="etUsername_hint">Username</string>
     <string name="etPassword_hint">Password</string>
 
+    <string name="limitedFunction">Can not access this function!</string>
+    <string name="networkDisconnectedLimitFunction">Network is not available, some functions may not be accessible. Please check your internet connection!</string>
+
     <!--    Login layout -->
     <string name="loginTitle">Login</string>
     <string name="loginDescription">Please sign in to continue</string>
     <string name="btnLogin">Login</string>
+    <string name="fillForm">Please fill the form</string>
+    <string name="btnLoggingIn">Logging in…</string>
     <string name="askForSignup">Don\'t have an account?</string>
     <string name="toSignup"><b><u>Sign up</u></b></string>
     <string name="accountNotFound">Account not found!</string>
@@ -25,6 +30,7 @@
     <string name="toLogin"><b><u>Login</u></b></string>
     <string name="incorrectConfirmPassword">Incorrect confirm password!</string>
     <string name="pleaseFillTheForm">Please fill the form!</string>
+    <string name="btnSigningUp">Signing up…</string>
     <string name="signupFailed">Signup Failed!</string>
     <string name="usernameExisted">Username is already existed!</string>
 
@@ -33,6 +39,10 @@
     <string name="failedRetrieveFriendList">Can not show your friend(s)</string>
     <string name="findFriend">Find your friends</string>
     <string name="chats">Chats</string>
+    <string name="notLoggedInLimitFunctions">Duo to a server error, you are not logged in, some functions may not be accessible!</string>
+
+    <!--    Search layout -->
+    <string name="searchError">Failed to get search results</string>
 
     <!--    Room layout -->
     <string name="messageListLimit">10</string>
