@@ -50,8 +50,6 @@ public class SplashActivity extends AppCompatActivity {
                                 SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.LOGIN_SUCCESS);
                                 Intent intent = new Intent(SplashActivity.this, MainActivity.class);
                                 startActivity(intent);
-                                Intent serviceIntent = new Intent(SplashActivity.this, StatusService.class);
-                                startService(serviceIntent);
 
                                 finish();
                             } else {

@@ -39,7 +39,7 @@
     <string name="failedRetrieveFriendList">Can not show your friend(s)</string>
     <string name="findFriend">Find your friends</string>
     <string name="chats">Chats</string>
-    <string name="notLoggedInLimitFunctions">Duo to a server error, you are not logged in, some functions may not be accessible!</string>
+    <string name="notLoggedInLimitFunctions">Duo to a server error, you are not logged in, some functions may not be accessible. Please restart the app after some minutes!</string>
 
     <!--    Search layout -->
     <string name="searchError">Failed to get search results</string>

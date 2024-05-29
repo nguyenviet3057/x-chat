@@ -8,6 +8,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -50,6 +52,7 @@ import com.planx.xchat.firebase.database.RoomReference;
 import com.planx.xchat.interfaces.IOnItemClickListener;
 import com.planx.xchat.models.Room;
 import com.planx.xchat.service.NetworkCallbackImpl;
+import com.planx.xchat.service.StatusService;
 import com.planx.xchat.sqlite.DatabaseHandler;
 import com.planx.xchat.models.User;
 
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements NetworkChangeList
     private boolean isFirstLoad = true;
     private ConnectivityManager connectivityManager;
     private NetworkCallbackImpl networkCallback;
+    private boolean isServerError = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,21 +132,24 @@ public class MainActivity extends AppCompatActivity implements NetworkChangeList
                     });
         });
 
+        isServerError = SharedPreferencesManager.getInstance().getLoginStatus() == AppLoginStatus.SERVER_ERROR;
         if (SharedPreferencesManager.getInstance().getLoginStatus() != AppLoginStatus.LOGIN_SUCCESS) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.notLoggedInLimitFunctions)
-                    .setNegativeButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancels the dialog.
-                        }
-                    }).show();
-            binding.tvAlert.setText(getString(R.string.notLoggedInLimitFunctions));
-            binding.tvAlert.setVisibility(View.VISIBLE);
+            if (SharedPreferencesManager.getInstance().getLoginStatus() == AppLoginStatus.SERVER_ERROR) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.notLoggedInLimitFunctions)
+                        .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancels the dialog.
+                            }
+                        }).show();
+                binding.tvAlert.setText(getString(R.string.notLoggedInLimitFunctions));
+                binding.tvAlert.setVisibility(View.VISIBLE);
 
-            binding.svSearchResult.setFocusable(false);
-            binding.svSearchResult.setOnClickListener(v -> {
-                Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_LONG).show();
-            });
+                binding.svSearchResult.setFocusable(false);
+                binding.svSearchResult.setOnClickListener(v -> {
+                    Toast.makeText(this, getString(R.string.limitedFunction), Toast.LENGTH_LONG).show();
+                });
+            }
         } else {
             binding.tvAlert.setVisibility(View.GONE);
 
@@ -166,6 +173,9 @@ public class MainActivity extends AppCompatActivity implements NetworkChangeList
                 }
                 SharedPreferencesManager.getInstance().clearData();
             });
+            XChat.messaging.deleteToken();
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancelAll();
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
@@ -211,6 +221,9 @@ public class MainActivity extends AppCompatActivity implements NetworkChangeList
 
         trackUserFriendsAndRooms();
         calculateElapsedTime();
+
+        Intent serviceIntent = new Intent(MainActivity.this, StatusService.class);
+        startService(serviceIntent);
     }
 
     private void calculateElapsedTime() {
@@ -516,16 +529,21 @@ public class MainActivity extends AppCompatActivity implements NetworkChangeList
                 });
             });
         } else {
-            runOnUiThread(() -> {
-                binding.tvAlert.setVisibility(View.GONE);
-                SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.LOGIN_SUCCESS);
+            if (isServerError) {
+                binding.tvAlert.setText(getString(R.string.notLoggedInLimitFunctions));
+                SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.SERVER_ERROR);
+            } else {
+                runOnUiThread(() -> {
+                    binding.tvAlert.setVisibility(View.GONE);
+                    SharedPreferencesManager.getInstance().setLoginStatus(AppLoginStatus.LOGIN_SUCCESS);
 
-                binding.svSearchResult.setFocusable(true);
-                binding.svSearchResult.setOnClickListener(v -> {
-                    Intent intent = new Intent(this, SearchActivity.class);
-                    startActivity(intent);
+                    binding.svSearchResult.setFocusable(true);
+                    binding.svSearchResult.setOnClickListener(v -> {
+                        Intent intent = new Intent(this, SearchActivity.class);
+                        startActivity(intent);
+                    });
                 });
-            });
+            }
         }
     }
 
